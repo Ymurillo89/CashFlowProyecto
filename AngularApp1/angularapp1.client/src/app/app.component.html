@@ -1,0 +1,155 @@
+<p-toast></p-toast>
+
+<!-- ── LOGIN: Full screen, no layout ──────────────────────────────────────── -->
+<ng-container *ngIf="!isLoggedIn">
+  <router-outlet></router-outlet>
+</ng-container>
+
+<!-- ── MAIN APP: Sidebar + Content ────────────────────────────────────────── -->
+<div *ngIf="isLoggedIn" class="flex h-screen w-screen overflow-hidden bg-app-bg text-text-main">
+
+  <!-- 1. Sidebar -->
+  <aside class="w-64 border-r border-panel-border bg-panel-bg flex flex-col justify-between">
+    <div>
+
+      <!-- Brand -->
+      <div class="p-6 border-b border-panel-border">
+        <div class="flex items-center space-x-3">
+          <div class="w-3 h-3 bg-brand-primary rounded-full animate-pulse"></div>
+          <span class="font-mono text-sm tracking-widest font-bold uppercase">CashFlow AI</span>
+        </div>
+        <div class="text-[10px] text-text-muted mt-2 uppercase font-mono tracking-wider">
+          Estado del Sistema: En Línea
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="p-4 space-y-2">
+
+        <!-- Operaciones (visible para todos los roles) -->
+        <div class="text-[10px] text-text-muted px-3 mb-2 uppercase font-mono tracking-widest">
+          Operaciones
+        </div>
+
+        <a
+          routerLink="/cashier"
+          routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
+          <i class="pi pi-upload text-xs"></i>
+          <span>Panel de Cajero</span>
+        </a>
+
+        <!-- Gerente: visible para Gerente Sucursal y Administrador -->
+        <a
+          *ngIf="isManagerOrAbove"
+          routerLink="/manager"
+          routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
+          <i class="pi pi-shield text-xs"></i>
+          <span>Escritorio de Gerente</span>
+        </a>
+
+        <!-- Admin section: visible solo para Administrador -->
+        <ng-container *ngIf="isAdmin">
+          <div class="text-[10px] text-text-muted px-3 pt-4 mb-2 uppercase font-mono tracking-widest">
+            Administración
+          </div>
+          <a
+            routerLink="/admin/companies"
+            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
+            <i class="pi pi-building text-xs"></i>
+            <span>Empresas</span>
+          </a>
+          <a
+            routerLink="/admin/stores"
+            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
+            <i class="pi pi-map-marker text-xs"></i>
+            <span>Puntos de Venta</span>
+          </a>
+          <a
+            routerLink="/admin/banks"
+            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
+            <i class="pi pi-credit-card text-xs"></i>
+            <span>Bancos</span>
+          </a>
+          <a
+            routerLink="/admin/users"
+            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
+            <i class="pi pi-users text-xs"></i>
+            <span>Usuarios</span>
+          </a>
+        </ng-container>
+
+      </nav>
+    </div>
+
+    <!-- Footer: user info + logout -->
+    <div class="border-t border-panel-border">
+      <!-- User card -->
+      <div class="p-4 bg-app-bg/30">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-full bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center">
+            <i class="pi pi-user text-xs text-brand-primary"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-mono font-bold text-text-main truncate">{{ currentUser?.fullName }}</div>
+            <div class="text-[9px] font-mono text-text-muted uppercase tracking-wider">{{ currentUser?.roleName }}</div>
+          </div>
+        </div>
+        <div class="text-[9px] font-mono text-text-muted mt-2 truncate">{{ currentUser?.companyName }}</div>
+      </div>
+
+      <!-- Logout button -->
+      <button
+        id="btn-logout"
+        (click)="logout()"
+        class="w-full px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest text-text-muted hover:text-brand-error hover:bg-brand-error/5 transition border-t border-panel-border flex items-center space-x-2">
+        <i class="pi pi-sign-out text-xs"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- 2. Main Content -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-app-bg">
+
+    <!-- Top Bar -->
+    <header class="h-14 border-b border-panel-border bg-panel-bg flex items-center justify-between px-6">
+      <div class="flex items-center space-x-2">
+        <span class="text-xs text-text-muted font-mono uppercase">Control /</span>
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-brand-primary">
+          {{ viewTitle }}
+        </span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <!-- Role badge -->
+        <span class="text-[9px] font-mono px-2 py-1 border uppercase tracking-widest"
+          [class.border-brand-primary]="isAdmin"
+          [class.text-brand-primary]="isAdmin"
+          [class.border-panel-border]="!isAdmin"
+          [class.text-text-muted]="!isAdmin">
+          ROL: {{ userRole }}
+        </span>
+        <span class="text-[10px] font-mono text-text-muted bg-panel-bg px-2 py-1 border border-panel-border">
+          ENTORNO: OPTICAL_SORTING_BENCH
+        </span>
+      </div>
+    </header>
+
+    <!-- Router Outlet -->
+    <div class="flex-1 overflow-y-auto p-6">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

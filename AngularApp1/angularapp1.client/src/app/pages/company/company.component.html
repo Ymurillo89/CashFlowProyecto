@@ -1,0 +1,98 @@
+<div class="precision-panel p-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted">
+      [ REGISTRO MAESTRO : EMPRESAS ]
+    </h3>
+    <button 
+      (click)="showAddCompanyDialog()"
+      class="p-button-success p-button-sm font-mono text-xs uppercase"
+      pButton 
+      label="Agregar Empresa">
+    </button>
+  </div>
+
+  <p-table [value]="companies" styleClass="p-datatable-sm font-mono text-xs">
+    <ng-template pTemplate="header">
+      <tr class="border-b border-panel-border text-left uppercase text-text-muted">
+        <th class="py-2">ID</th>
+        <th class="py-2">Nombre</th>
+        <th class="py-2">NIT</th>
+        <th class="py-2">Email</th>
+        <th class="py-2">Teléfono</th>
+        <th class="py-2">Estado</th>
+        <th class="py-2 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-company>
+      <tr class="border-b border-panel-border/30 hover:bg-panel-bg/20">
+        <td class="py-2 text-text-muted">{{ company.id }}</td>
+        <td class="py-2 font-bold">{{ company.name }}</td>
+        <td class="py-2">{{ company.nit }}</td>
+        <td class="py-2">{{ company.email }}</td>
+        <td class="py-2">{{ company.phone }}</td>
+        <td class="py-2">
+          <span [class.text-brand-primary]="company.isActive" [class.text-brand-error]="!company.isActive">
+            {{ company.isActive ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="py-2 text-right space-x-2">
+          <button pButton icon="pi pi-pencil" (click)="showEditCompanyDialog(company)" class="p-button-text p-button-sm"></button>
+          <button pButton icon="pi pi-trash" (click)="deleteCompany(company.id)" class="p-button-text p-button-danger p-button-sm"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- DIÁLOGO: EMPRESA -->
+<p-dialog 
+  [(visible)]="displayCompanyDialog" 
+  [header]="isEditingCompany ? 'Modificar Empresa' : 'Registrar Nueva Empresa'" 
+  [modal]="true" 
+  [style]="{ width: '450px' }" 
+  styleClass="glass-plate border-panel-border font-mono text-xs">
+  
+  <div class="space-y-4 pt-4 text-text-main">
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Nombre de la Empresa</label>
+      <input type="text" [(ngModel)]="companyForm.name" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+    
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">NIT</label>
+      <input type="text" [(ngModel)]="companyForm.nit" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Email</label>
+      <input type="email" [(ngModel)]="companyForm.email" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Teléfono</label>
+      <input type="text" [(ngModel)]="companyForm.phone" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Dirección</label>
+      <input type="text" [(ngModel)]="companyForm.address" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">URL del Logo</label>
+      <input type="text" [(ngModel)]="companyForm.logoUrl" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <input type="checkbox" id="companyActive" [(ngModel)]="companyForm.isActive" class="accent-brand-primary" />
+      <label for="companyActive" class="text-[10px] uppercase text-text-muted">Activo en el Sistema</label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-2">
+      <button pButton label="Cancelar" class="p-button-text p-button-sm font-mono uppercase" (click)="displayCompanyDialog = false"></button>
+      <button pButton label="Guardar Cambios" class="p-button-success p-button-sm font-mono uppercase" (click)="saveCompany()"></button>
+    </div>
+  </ng-template>
+</p-dialog>

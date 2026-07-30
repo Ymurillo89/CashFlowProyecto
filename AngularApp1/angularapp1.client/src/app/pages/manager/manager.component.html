@@ -1,0 +1,143 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  
+  <!-- Izquierda: Cola de Auditoría -->
+  <div class="space-y-6">
+    <div class="precision-panel p-6">
+      <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+        [ COLA DE AUDITORÍA : DISCREPANCIAS ]
+      </h3>
+      
+      <div class="space-y-2">
+        <div 
+          *ngFor="let d of consignations" 
+          (click)="selectConsignationForReview(d)"
+          [class.border-brand-error]="d.detectedAmount !== d.declaredAmount && selectedConsignation?.id === d.id"
+          [class.bg-panel-bg-active]="selectedConsignation?.id === d.id"
+          class="p-4 border border-panel-border cursor-pointer hover:bg-panel-bg/30 transition flex flex-col space-y-2 relative">
+          
+          <div class="flex justify-between items-center">
+            <span class="font-mono text-xs font-bold text-text-main">ID #{{ d.id }}</span>
+            <span 
+              [class.text-brand-error]="d.detectedAmount !== d.declaredAmount"
+              [class.text-brand-primary]="d.detectedAmount === d.declaredAmount"
+              class="font-mono text-[9px] uppercase font-bold tracking-widest">
+              {{ d.detectedAmount === d.declaredAmount ? 'Coincide' : 'Discrepancia' }}
+            </span>
+          </div>
+
+          <div class="text-[11px] text-text-muted">
+            Sucursal: <span class="text-text-main">{{ d.storeName }}</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[10px] font-mono border-t border-panel-border/30 pt-2">
+            <div>
+              <span class="text-text-muted block uppercase">Declarado</span>
+              <span class="text-text-main">${{ d.declaredAmount | number }}</span>
+            </div>
+            <div>
+              <span class="text-text-muted block uppercase">Monto OCR</span>
+              <span [class.text-brand-error]="d.detectedAmount !== d.declaredAmount" class="font-bold">${{ d.detectedAmount | number }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Centro y Derecha: Mesa de Comparación y Conciliación -->
+  <div class="lg:col-span-2 space-y-6" *ngIf="selectedConsignation">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Panel Izquierdo: Visualizador de Recibo (Microscopio) -->
+      <div class="precision-panel p-6 flex flex-col h-full">
+        <div class="reticle-corner reticle-top-left" [class.reticle-error-corner]="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount"></div>
+        <div class="reticle-corner reticle-top-right" [class.reticle-error-corner]="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount"></div>
+        <div class="reticle-corner reticle-bottom-left" [class.reticle-error-corner]="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount"></div>
+        <div class="reticle-corner reticle-bottom-right" [class.reticle-error-corner]="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount"></div>
+
+        <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+          [ MICROSCOPIO : DETALLES DEL RECIBO ]
+        </h3>
+
+        <div class="flex-1 bg-app-bg border border-panel-border relative flex flex-col items-center justify-center p-2 text-center min-h-[300px] overflow-hidden">
+          <div class="absolute top-4 right-4 z-10 bg-brand-error/90 border border-brand-error text-white font-mono text-[9px] px-2 py-1 uppercase" *ngIf="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount">
+            Discrepancia Detectada
+          </div>
+
+          <img *ngIf="selectedConsignation.fileUrl" [src]="selectedConsignation.fileUrl" class="max-h-[300px] max-w-full object-contain mb-4 z-0">
+          <i *ngIf="!selectedConsignation.fileUrl" class="pi pi-file text-5xl text-text-muted mb-4 z-0"></i>
+          
+          <div class="font-mono text-xs space-y-2 relative z-10 w-full mt-auto">
+            <div class="text-[10px] text-text-muted border border-panel-border p-2 bg-panel-bg/90 backdrop-blur-sm">
+              BANCO: {{ selectedConsignation.bankName }} | REF: {{ selectedConsignation.referenceNumber }} | MONTO OCR: ${{ selectedConsignation.detectedAmount | number }}
+            </div>
+          </div>
+
+          <!-- Líneas de retícula -->
+          <div class="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+            <div class="w-full h-[1px] bg-brand-error/30"></div>
+            <div class="h-full w-[1px] bg-brand-error/30 absolute"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Derecho: Acciones de Conciliación -->
+      <div class="precision-panel p-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+            [ MESA DE CONCILIACIÓN ]
+          </h3>
+
+          <div class="space-y-4">
+            <div class="border-b border-panel-border pb-3">
+              <span class="text-[10px] font-mono text-text-muted block uppercase">Sucursal</span>
+              <span class="text-sm font-bold">{{ selectedConsignation.storeName }}</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-b border-panel-border pb-3">
+              <div>
+                <span class="text-[10px] font-mono text-text-muted block uppercase">Monto Declarado</span>
+                <span class="text-sm font-bold text-text-main">${{ selectedConsignation.declaredAmount | number }}</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-mono text-text-muted block uppercase">Monto AI OCR</span>
+                <span class="text-sm font-bold" [class.text-brand-error]="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount">${{ selectedConsignation.detectedAmount | number }}</span>
+              </div>
+            </div>
+
+            <div class="border-b border-panel-border pb-3" *ngIf="selectedConsignation.detectedAmount !== selectedConsignation.declaredAmount">
+              <span class="text-[10px] font-mono text-text-muted block uppercase font-bold text-brand-error">Discrepancia (Δ)</span>
+              <span class="text-sm font-mono text-brand-error font-bold">
+                -${{ (selectedConsignation.declaredAmount - (selectedConsignation.detectedAmount || 0)) | number }}
+              </span>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Notas de Conciliación</label>
+              <textarea 
+                [(ngModel)]="reviewComments"
+                placeholder="Ingrese justificación o comentarios de resolución de discrepancia..." 
+                class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary h-24"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mt-6">
+          <button 
+            (click)="rejectDeposit(selectedConsignation.id)"
+            class="p-button-danger p-button-sm text-xs font-mono uppercase"
+            pButton 
+            label="Rechazar Recibo">
+          </button>
+          <button 
+            (click)="validateDeposit(selectedConsignation.id)"
+            class="p-button-success p-button-sm text-xs font-mono uppercase"
+            pButton 
+            label="Forzar Validación">
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

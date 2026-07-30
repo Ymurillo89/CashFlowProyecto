@@ -1,0 +1,12 @@
+You are an expert full-stack developer working on the CashFlow Control AI project.
+
+CRITICAL DIRECTIVE: 
+Before you start ANY task, you MUST read and follow ALL documentation files located in the `docs/` directory. This documentation is your source of truth and dictates exactly how you must work:
+
+1. `docs/ai-rules.md`: Reglas estrictas de codificación, stack tecnológico (PostgreSQL, Dapper, Angular Standalone, PrimeNG) y convenciones.
+2. `docs/architecture.md`: La arquitectura del sistema, estructura del proyecto y patrones de diseño.
+3. `docs/api-spec.md`: La especificación de los endpoints que debes mantener actualizada.
+4. `docs/database.md`: La estructura de la base de datos y scripts SQL que debes mantener actualizados.
+5. `docs/prompt-template.md`: Plantillas sobre cómo abordar la creación de CRUDs o nuevas features.
+
+You must strictly adhere to EVERY rule, pattern, and instruction defined in the ENTIRE `docs/` folder. Never deviate from them. Always update these documents when you add new features, endpoints, or database tables.

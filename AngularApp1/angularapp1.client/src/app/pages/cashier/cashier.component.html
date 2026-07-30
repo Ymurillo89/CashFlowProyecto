@@ -1,0 +1,190 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  
+  <!-- Izquierda: Escáner Óptico AI -->
+  <div class="lg:col-span-2 space-y-6">
+    <div class="precision-panel p-6">
+      <!-- Esquinas de retícula -->
+      <div class="reticle-corner reticle-top-left"></div>
+      <div class="reticle-corner reticle-top-right"></div>
+      <div class="reticle-corner reticle-bottom-left"></div>
+      <div class="reticle-corner reticle-bottom-right"></div>
+
+      <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+        [ MESA DE ESCANEO : RECIBO FÍSICO ]
+      </h3>
+
+      <!-- Contenedor del Escáner -->
+      <div class="relative min-h-[300px] border border-dashed border-panel-border bg-app-bg flex flex-col items-center justify-center p-6 text-center">
+        
+        <!-- Línea láser de animación de escaneo -->
+        <div *ngIf="isScanning" class="laser-line"></div>
+
+        <!-- Indicador de carga -->
+        <div *ngIf="!uploadedFile" class="space-y-4">
+          <i class="pi pi-images text-4xl text-text-muted"></i>
+          <p class="text-xs text-text-muted font-mono uppercase">
+            Introduzca el recibo físico de consignación (PNG, JPG) en el escáner
+          </p>
+          <p-fileUpload 
+            mode="basic" 
+            chooseLabel="Seleccionar Recibo" 
+            chooseIcon="pi pi-plus"
+            accept="image/*" 
+            maxFileSize="5000000"
+            (onSelect)="onUploadSelect($event)"
+            styleClass="p-button-outlined">
+          </p-fileUpload>
+        </div>
+
+        <!-- Vista previa de recibo cargado -->
+        <div *ngIf="uploadedFile" class="w-full flex flex-col items-center">
+          <div class="w-full max-w-sm p-2 border border-panel-border bg-panel-bg/50 relative mb-4">
+            <div class="reticle-corner reticle-top-left"></div>
+            <div class="reticle-corner reticle-top-right"></div>
+            <div class="reticle-corner reticle-bottom-left"></div>
+            <div class="reticle-corner reticle-bottom-right"></div>
+            <div class="h-48 bg-panel-bg flex items-center justify-center overflow-hidden">
+              <span class="font-mono text-xs text-text-muted tracking-wider uppercase">
+                [ {{ uploadedFile.name }} ]
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-3" *ngIf="isScanning">
+            <i class="pi pi-spin pi-spinner text-brand-primary"></i>
+            <span class="font-mono text-xs text-brand-primary tracking-widest uppercase">
+              Escaneo AI OCR en Progreso... {{ scanProgress }}%
+            </span>
+          </div>
+
+          <!-- Resultados del Escaneo AI -->
+          <div class="w-full border-t border-panel-border pt-4 mt-2 font-mono text-xs grid grid-cols-2 gap-4" *ngIf="scanCompleted">
+            <div class="bg-panel-bg/30 p-3 border border-panel-border">
+              <span class="text-text-muted block text-[10px] uppercase">Banco Detectado</span>
+              <span class="font-bold text-brand-primary">{{ ocrBank }}</span>
+            </div>
+            <div class="bg-panel-bg/30 p-3 border border-panel-border">
+              <span class="text-text-muted block text-[10px] uppercase">No. Referencia</span>
+              <span class="font-bold text-brand-primary">{{ ocrReference }}</span>
+            </div>
+            <div class="bg-panel-bg/30 p-3 border border-panel-border">
+              <span class="text-text-muted block text-[10px] uppercase">Monto Extraído</span>
+              <span class="font-bold text-brand-primary data-tabular">${{ ocrAmount | number }}</span>
+            </div>
+            <div class="bg-panel-bg/30 p-3 border border-panel-border">
+              <span class="text-text-muted block text-[10px] uppercase">Confianza</span>
+              <span class="font-bold text-brand-primary">{{ ocrConfidence }}%</span>
+            </div>
+          </div>
+
+          <button 
+            *ngIf="scanCompleted"
+            (click)="uploadedFile = null; scanCompleted = false"
+            class="mt-4 p-button-secondary p-button-sm font-mono text-xs uppercase"
+            pButton 
+            label="Limpiar Escáner">
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla: Transmisiones Recientes -->
+    <div class="precision-panel p-6">
+      <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+        [ LOG DE TRANSMISIÓN : CONSIGNACIONES DE SUCURSAL ]
+      </h3>
+      <p-table [value]="consignations" styleClass="p-datatable-sm font-mono text-xs">
+        <ng-template pTemplate="header">
+          <tr class="border-b border-panel-border text-left uppercase text-text-muted">
+            <th class="py-2">ID</th>
+            <th class="py-2">Sucursal</th>
+            <th class="py-2">Banco</th>
+            <th class="py-2">Declarado</th>
+            <th class="py-2">Monto OCR</th>
+            <th class="py-2">Estado</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-consignation>
+          <tr class="border-b border-panel-border/30 hover:bg-panel-bg/20">
+            <td class="py-2 text-[10px]">{{ consignation.id }}</td>
+            <td class="py-2">{{ consignation.storeName }}</td>
+            <td class="py-2">{{ consignation.bankName }}</td>
+            <td class="py-2 data-tabular">${{ consignation.declaredAmount | number }}</td>
+            <td class="py-2 data-tabular">
+              <span *ngIf="consignation.detectedAmount">${{ consignation.detectedAmount | number }}</span>
+              <span *ngIf="!consignation.detectedAmount" class="text-text-muted">-</span>
+            </td>
+            <td class="py-2">
+              <span 
+                [class.text-brand-primary]="consignation.statusId === 2"
+                [class.text-brand-error]="consignation.statusId === 3"
+                [class.text-brand-warn]="consignation.statusId === 1"
+                class="uppercase tracking-widest font-bold text-[10px]">
+                {{ consignation.statusName }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <!-- Derecha: Formulario de Declaración -->
+  <div class="space-y-6">
+    <div class="precision-panel p-6">
+      <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+        [ INTERFAZ DE DECLARACIÓN ]
+      </h3>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Punto de Venta (Sucursal)</label>
+          <select 
+            [(ngModel)]="selectedStoreId"
+            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
+            <option [value]="null">Seleccionar Sucursal</option>
+            <option *ngFor="let s of stores" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Monto Declarado ($)</label>
+          <input 
+            type="number" 
+            [(ngModel)]="declaredAmount"
+            placeholder="0.00" 
+            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Banco Destino</label>
+          <select 
+            [(ngModel)]="selectedBankId"
+            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
+            <option [value]="null">Seleccionar Banco</option>
+            <option *ngFor="let b of banks" [value]="b.id">{{ b.name }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">No. Referencia de Recibo</label>
+          <input 
+            type="text" 
+            [(ngModel)]="declaredReference"
+            placeholder="Ej. TX-129381" 
+            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+        </div>
+
+        <div class="pt-4">
+          <button 
+            (click)="submitDeposit()"
+            class="w-full p-button-success p-button-sm text-xs font-mono uppercase tracking-wider"
+            pButton 
+            label="Enviar y Verificar Consignación">
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

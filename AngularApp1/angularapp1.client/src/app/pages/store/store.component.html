@@ -1,0 +1,110 @@
+<div class="precision-panel p-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted">
+      [ REGISTRO MAESTRO : PUNTOS DE VENTA ]
+    </h3>
+    <button 
+      (click)="showAddStoreDialog()"
+      class="p-button-success p-button-sm font-mono text-xs uppercase"
+      pButton 
+      label="Agregar Punto de Venta">
+    </button>
+  </div>
+
+  <p-table [value]="stores" styleClass="p-datatable-sm font-mono text-xs">
+    <ng-template pTemplate="header">
+      <tr class="border-b border-panel-border text-left uppercase text-text-muted">
+        <th class="py-2">ID</th>
+        <th class="py-2">Código</th>
+        <th class="py-2">Nombre</th>
+        <th class="py-2">Empresa</th>
+        <th class="py-2">Ciudad</th>
+        <th class="py-2">Encargado</th>
+        <th class="py-2">Estado</th>
+        <th class="py-2 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-store>
+      <tr class="border-b border-panel-border/30 hover:bg-panel-bg/20">
+        <td class="py-2 text-text-muted">{{ store.id }}</td>
+        <td class="py-2 font-mono font-bold">{{ store.code }}</td>
+        <td class="py-2 font-bold">{{ store.name }}</td>
+        <td class="py-2">{{ getCompanyName(store.companyId) }}</td>
+        <td class="py-2">{{ store.city }}</td>
+        <td class="py-2">{{ store.managerName }} ({{ store.managerPhone }})</td>
+        <td class="py-2">
+          <span [class.text-brand-primary]="store.isActive" [class.text-brand-error]="!store.isActive">
+            {{ store.isActive ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="py-2 text-right space-x-2">
+          <button pButton icon="pi pi-pencil" (click)="showEditStoreDialog(store)" class="p-button-text p-button-sm"></button>
+          <button pButton icon="pi pi-trash" (click)="deleteStore(store.id)" class="p-button-text p-button-danger p-button-sm"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- DIÁLOGO: PUNTO DE VENTA -->
+<p-dialog 
+  [(visible)]="displayStoreDialog" 
+  [header]="isEditingStore ? 'Modificar Punto de Venta' : 'Registrar Nuevo Punto de Venta'" 
+  [modal]="true" 
+  [style]="{ width: '450px' }" 
+  styleClass="glass-plate border-panel-border font-mono text-xs">
+  
+  <div class="space-y-4 pt-4 text-text-main">
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Empresa Propietaria</label>
+      <select 
+        [(ngModel)]="storeForm.companyId"
+        class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
+        <option [value]="null">Seleccionar Empresa Padre</option>
+        <option *ngFor="let c of companies" [value]="c.id">{{ c.name }}</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Código del Punto de Venta</label>
+      <input type="text" [(ngModel)]="storeForm.code" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Nombre del Punto de Venta</label>
+      <input type="text" [(ngModel)]="storeForm.name" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Ciudad</label>
+      <input type="text" [(ngModel)]="storeForm.city" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Dirección</label>
+      <input type="text" [(ngModel)]="storeForm.address" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Nombre del Encargado</label>
+      <input type="text" [(ngModel)]="storeForm.managerName" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Teléfono del Encargado</label>
+      <input type="text" [(ngModel)]="storeForm.managerPhone" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <input type="checkbox" id="storeActive" [(ngModel)]="storeForm.isActive" class="accent-brand-primary" />
+      <label for="storeActive" class="text-[10px] uppercase text-text-muted">Activo en el Sistema</label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-2">
+      <button pButton label="Cancelar" class="p-button-text p-button-sm font-mono uppercase" (click)="displayStoreDialog = false"></button>
+      <button pButton label="Guardar Cambios" class="p-button-success p-button-sm font-mono uppercase" (click)="saveStore()"></button>
+    </div>
+  </ng-template>
+</p-dialog>

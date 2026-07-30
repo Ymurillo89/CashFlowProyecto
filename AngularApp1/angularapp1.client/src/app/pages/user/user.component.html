@@ -1,0 +1,125 @@
+<div class="precision-panel p-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted">
+      [ REGISTRO MAESTRO : USUARIOS ]
+    </h3>
+    <button 
+      (click)="showAddUserDialog()"
+      class="p-button-success p-button-sm font-mono text-xs uppercase"
+      pButton 
+      label="Agregar Usuario">
+    </button>
+  </div>
+
+  <p-table [value]="users" styleClass="p-datatable-sm font-mono text-xs">
+    <ng-template pTemplate="header">
+      <tr class="border-b border-panel-border text-left uppercase text-text-muted">
+        <th class="py-2">ID</th>
+        <th class="py-2">Nombre Completo</th>
+        <th class="py-2">Correo Electrónico</th>
+        <th class="py-2">Rol</th>
+        <th class="py-2">Empresa</th>
+        <th class="py-2">Sucursal / Punto Venta</th>
+        <th class="py-2">Estado</th>
+        <th class="py-2 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr class="border-b border-panel-border/30 hover:bg-panel-bg/20">
+        <td class="py-2 text-text-muted">{{ user.id }}</td>
+        <td class="py-2 font-bold">{{ user.fullName }}</td>
+        <td class="py-2 font-mono">{{ user.email }}</td>
+        <td class="py-2">
+          <span class="bg-brand-primary/10 text-brand-primary px-2 py-0.5 border border-brand-primary/20 text-[10px] uppercase font-bold tracking-wider">
+            {{ user.roleName }}
+          </span>
+        </td>
+        <td class="py-2">{{ user.companyName }}</td>
+        <td class="py-2">
+          {{ user.storeName ? user.storeName : 'Ninguno (Admin Empresa)' }}
+        </td>
+        <td class="py-2">
+          <span [class.text-brand-primary]="user.isActive" [class.text-brand-error]="!user.isActive">
+            {{ user.isActive ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="py-2 text-right space-x-2">
+          <button pButton icon="pi pi-pencil" (click)="showEditUserDialog(user)" class="p-button-text p-button-sm"></button>
+          <button pButton icon="pi pi-trash" (click)="deleteUser(user.id)" class="p-button-text p-button-danger p-button-sm"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- DIÁLOGO: USUARIO -->
+<p-dialog 
+  [(visible)]="displayUserDialog" 
+  [header]="isEditingUser ? 'Modificar Usuario' : 'Registrar Nuevo Usuario'" 
+  [modal]="true" 
+  [style]="{ width: '450px' }" 
+  styleClass="glass-plate border-panel-border font-mono text-xs">
+  
+  <div class="space-y-4 pt-4 text-text-main">
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Nombre Completo</label>
+      <input type="text" [(ngModel)]="userForm.fullName" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Correo Electrónico</label>
+      <input type="email" [(ngModel)]="userForm.email" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">
+        Contraseña {{ isEditingUser ? '(Dejar en blanco para no cambiar)' : '' }}
+      </label>
+      <input type="password" [(ngModel)]="userForm.password" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Rol de Usuario</label>
+      <select 
+        [(ngModel)]="userForm.roleId"
+        class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
+        <option [value]="null">Seleccionar Rol</option>
+        <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Empresa</label>
+      <select 
+        [(ngModel)]="userForm.companyId"
+        (change)="onCompanyChange()"
+        class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
+        <option [value]="null">Seleccionar Empresa</option>
+        <option *ngFor="let c of companies" [value]="c.id">{{ c.name }}</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Punto de Venta / Sucursal</label>
+      <select 
+        [(ngModel)]="userForm.storeId"
+        class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary"
+        [disabled]="!userForm.companyId">
+        <option [value]="null">Ninguno (Administrador de Empresa)</option>
+        <option *ngFor="let s of filteredStores" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+      </select>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <input type="checkbox" id="userActive" [(ngModel)]="userForm.isActive" class="accent-brand-primary" />
+      <label for="userActive" class="text-[10px] uppercase text-text-muted">Activo en el Sistema</label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-2">
+      <button pButton label="Cancelar" class="p-button-text p-button-sm font-mono uppercase" (click)="displayUserDialog = false"></button>
+      <button pButton label="Guardar Cambios" class="p-button-success p-button-sm font-mono uppercase" (click)="saveUser()"></button>
+    </div>
+  </ng-template>
+</p-dialog>

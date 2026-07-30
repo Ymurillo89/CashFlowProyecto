@@ -1,0 +1,63 @@
+<div class="precision-panel p-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted">
+      [ REGISTRO MAESTRO : BANCOS ]
+    </h3>
+    <button 
+      (click)="showAddBankDialog()"
+      class="p-button-success p-button-sm font-mono text-xs uppercase"
+      pButton 
+      label="Agregar Banco">
+    </button>
+  </div>
+
+  <p-table [value]="banks" styleClass="p-datatable-sm font-mono text-xs">
+    <ng-template pTemplate="header">
+      <tr class="border-b border-panel-border text-left uppercase text-text-muted">
+        <th class="py-2">ID</th>
+        <th class="py-2">Nombre del Banco</th>
+        <th class="py-2">Código Entidad</th>
+        <th class="py-2 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-bank>
+      <tr class="border-b border-panel-border/30 hover:bg-panel-bg/20">
+        <td class="py-2 text-text-muted">{{ bank.id }}</td>
+        <td class="py-2 font-bold">{{ bank.name }}</td>
+        <td class="py-2 font-mono">{{ bank.code }}</td>
+        <td class="py-2 text-right space-x-2">
+          <button pButton icon="pi pi-pencil" (click)="showEditBankDialog(bank)" class="p-button-text p-button-sm"></button>
+          <button pButton icon="pi pi-trash" (click)="deleteBank(bank.id)" class="p-button-text p-button-danger p-button-sm"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- DIÁLOGO: BANCO -->
+<p-dialog 
+  [(visible)]="displayBankDialog" 
+  [header]="isEditingBank ? 'Modificar Banco' : 'Registrar Nuevo Banco'" 
+  [modal]="true" 
+  [style]="{ width: '450px' }" 
+  styleClass="glass-plate border-panel-border font-mono text-xs">
+  
+  <div class="space-y-4 pt-4 text-text-main">
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Nombre del Banco</label>
+      <input type="text" [(ngModel)]="bankForm.name" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+    
+    <div>
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Código Entidad</label>
+      <input type="text" [(ngModel)]="bankForm.code" class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-2">
+      <button pButton label="Cancelar" class="p-button-text p-button-sm font-mono uppercase" (click)="displayBankDialog = false"></button>
+      <button pButton label="Guardar Cambios" class="p-button-success p-button-sm font-mono uppercase" (click)="saveBank()"></button>
+    </div>
+  </ng-template>
+</p-dialog>

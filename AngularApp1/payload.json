@@ -1,0 +1,24 @@
+{
+  "title": "Choose the visual world for CashFlow Control AI",
+  "question": "The seed assigned 'Optical Sorting Bench'. Keep it, take the challenger, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "High-Precision Optical Sorting Bench",
+      "kicker": "THE ROLL",
+      "lineage": "Industrial banking scanners and optical equipment",
+      "body": "CashFlow AI feels like an optical scanner. The screen is clinical, structured, and highly precise. Receipts slide in to be laser-scanned by the AI. The interface uses high-contrast targeting reticles (glassmorphism) to highlight mismatches between declared and OCR-read amounts. It's clean, premium, and trustworthy."
+    },
+    {
+      "id": "challenger-cassette",
+      "label": "Cassette Futurist Terminal",
+      "lineage": "pop-culture cassette futurism deck",
+      "body": "A retro-tactile approach where the interface feels like heavy brushed aluminum equipment. Uploading a receipt is like snapping in a tape. Validation is done via heavy chrome toggles and amber LED readouts. Fun and highly distinctive.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-cassette-futurism-deck-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/pop-culture-shelf-cassette-futurism-deck.webp"
+    }
+  ],
+  "reroll": true,
+  "canon": true,
+  "steer": true
+}

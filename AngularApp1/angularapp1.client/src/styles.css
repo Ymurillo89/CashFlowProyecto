@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+@theme {
+  --color-brand-primary: #00ff88;    /* Precise scanner green / Active laser */
+  --color-brand-error: #ff3366;      /* High-contrast discrepancy red */
+  --color-brand-warn: #ffaa00;       /* Pending status amber */
+  --color-app-bg: #0a0d14;           /* Deep dark workspace */
+  --color-panel-bg: #111622;         /* Slightly lighter panel background */
+  --color-panel-border: #1e293b;     /* Hairline border slate-800 */
+  --color-text-main: #f8fafc;        /* Bright slate white */
+  --color-text-muted: #64748b;       /* Muted slate gray */
+  --font-mono: "Space Mono", "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Design System Rules: High-Precision Optical Sorting Bench */
+
+body {
+  background-color: var(--color-app-bg);
+  color: var(--color-text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Force Tabular Numbers for all financial and numerical readouts */
+.data-tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rigid Paneled Spatial Layout */
+.precision-panel {
+  background-color: var(--color-panel-bg);
+  border: 1px solid var(--color-panel-border);
+  box-shadow: none !important;
+  border-radius: 2px;
+  position: relative;
+}
+
+.bg-panel-bg-active {
+  background-color: rgba(30, 41, 59, 0.4) !important;
+}
+
+/* Hairline Grid Helper */
+.hairline-grid {
+  display: grid;
+  gap: 1px;
+  background-color: var(--color-panel-border);
+}
+
+.hairline-grid > * {
+  background-color: var(--color-panel-bg);
+}
+
+/* High-Contrast Target Reticles (Active OCR Scanner States) */
+.reticle-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--color-brand-primary);
+  border-style: solid;
+  pointer-events: none;
+}
+.reticle-top-left { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+.reticle-top-right { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+.reticle-bottom-left { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+.reticle-bottom-right { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+.reticle-error-corner {
+  border-color: var(--color-brand-error) !important;
+}
+
+/* Glass Plate overlays (Microsocope Slide Effect) */
+.glass-plate {
+  background: rgba(17, 22, 34, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* Laser sweep animation for OCR scanning */
+@keyframes laser-sweep {
+  0% { top: 0%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.laser-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-brand-primary), transparent);
+  box-shadow: 0 0 8px var(--color-brand-primary);
+  animation: laser-sweep 3s infinite linear;
+  pointer-events: none;
+}
+
+/* Reset PrimeNG default rounded corners and shadows to match Optical Bench */
+.p-button, .p-inputtext, .p-fileupload, .p-card, .p-dialog {
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.p-button {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+}
+
+.p-inputtext:focus {
+  border-color: var(--color-brand-primary) !important;
+  box-shadow: 0 0 0 1px var(--color-brand-primary) !important;
+}

@@ -1,0 +1,23 @@
+# IDE
+.vs/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+
+# Node
+node_modules/
+.npm/
+npm-debug.log*
+
+# Angular
+dist/
+tmp/
+
+# .NET
+bin/
+obj/
+
+# OS
+.DS_Store
+Thumbs.db
