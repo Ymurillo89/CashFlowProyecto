@@ -29,6 +29,11 @@ namespace AngularApp1.Server.Services
             return await _repository.GetConsignationsByStatusAsync(1); // 1 = Pendiente
         }
 
+        public async Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync()
+        {
+            return await _repository.GetAllConsignationsAsync();
+        }
+
         public async Task<GetConsignation> GetConsignationByIdAsync(long id)
         {
             return await _repository.GetConsignationByIdAsync(id);
@@ -39,7 +44,7 @@ namespace AngularApp1.Server.Services
             if (file == null || file.Length == 0)
                 throw new ArgumentException("El archivo es obligatorio");
 
-            var uploadsPath = Path.Combine(_env.WebRootPath, "uploads");
+            var uploadsPath = Path.Combine(_env.ContentRootPath, "uploads");
             if (!Directory.Exists(uploadsPath))
                 Directory.CreateDirectory(uploadsPath);
 

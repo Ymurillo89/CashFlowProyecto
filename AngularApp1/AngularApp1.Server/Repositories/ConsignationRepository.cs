@@ -23,25 +23,28 @@ namespace AngularApp1.Server.Repositories
         {
             var query = @"
                 SELECT 
-                    c.Id, c.CompanyId, comp.Nombre AS CompanyName, c.StoreId, s.Nombre AS StoreName,
-                    c.BankId, b.Nombre AS BankName, c.StatusId,
-                    CASE WHEN c.StatusId = 1 THEN 'Pendiente' WHEN c.StatusId = 2 THEN 'Validada' ELSE 'Discrepancia' END AS StatusName,
-                    c.ReferenceNumber, c.DeclaredAmount, c.DetectedAmount, c.ConsignationDate, c.ConsignationTime,
-                    c.Notes, u1.NombreCompleto AS CreatedByName, u2.NombreCompleto AS ValidatedByName,
-                    c.ValidationDate, c.CreatedAt,
-                    f.FileUrl,
-                    o.Id, o.ConsignationId, o.DetectedBank, o.DetectedReference, o.DetectedAmount, 
-                    o.DetectedDate, o.Confidence, o.RawText, o.ProcessedAt
-                FROM Flow_tblConsignations c
-                INNER JOIN Flow_tblEmpresas comp ON c.CompanyId = comp.Id
-                INNER JOIN Flow_tblPuntosVenta s ON c.StoreId = s.Id
-                INNER JOIN Flow_tblBancos b ON c.BankId = b.Id
-                LEFT JOIN Flow_tblUsuarios u1 ON c.CreatedBy = u1.Id
-                LEFT JOIN Flow_tblUsuarios u2 ON c.ValidatedBy = u2.Id
-                LEFT JOIN Flow_tblConsignationFiles f ON c.Id = f.ConsignationId
-                LEFT JOIN Flow_tblOcrResults o ON c.Id = o.ConsignationId
-                WHERE c.StatusId = @StatusId
-                ORDER BY c.CreatedAt ASC";
+                    c.Id, c.EmpresaId AS CompanyId, comp.Nombre AS CompanyName, c.PuntoVentaId AS StoreId,
+                    s.Nombre AS StoreName, c.BancoId AS BankId, b.Nombre AS BankName, c.EstadoId AS StatusId,
+                    est.Nombre AS StatusName,
+                    c.NumeroReferencia AS ReferenceNumber, c.MontoDeclarado AS DeclaredAmount, c.MontoDetectado AS DetectedAmount,
+                    c.FechaConsignacion::timestamp AS ConsignationDate, c.HoraConsignacion::interval AS ConsignationTime,
+                    c.Observaciones AS Notes, u1.NombreCompleto AS CreatedByName, u2.NombreCompleto AS ValidatedByName,
+                    c.FechaValidacion AS ValidationDate, c.FechaCreacion AS CreatedAt,
+                    f.UrlArchivo AS FileUrl,
+                    o.Id, o.ConsignacionId AS ConsignationId, o.BancoDetectado AS DetectedBank, o.ReferenciaDetectada AS DetectedReference,
+                    o.MontoDetectado AS DetectedAmount, o.FechaDetectada::timestamp AS DetectedDate,
+                    o.Confianza AS Confidence, o.TextoCrudo AS RawText, o.FechaProcesamiento AS ProcessedAt
+                FROM Flow_tblConsignaciones c
+                INNER JOIN Flow_tblEmpresas comp ON c.EmpresaId = comp.Id
+                INNER JOIN Flow_tblPuntosVenta s ON c.PuntoVentaId = s.Id
+                INNER JOIN Flow_tblBancos b ON c.BancoId = b.Id
+                INNER JOIN Flow_tblEstadosConsignacion est ON c.EstadoId = est.Id
+                LEFT JOIN Flow_tblUsuarios u1 ON c.CreadoPor = u1.Id
+                LEFT JOIN Flow_tblUsuarios u2 ON c.ValidadoPor = u2.Id
+                LEFT JOIN Flow_tblArchivosConsignacion f ON c.Id = f.ConsignacionId
+                LEFT JOIN Flow_tblResultadosOcr o ON c.Id = o.ConsignacionId
+                WHERE c.EstadoId = @StatusId
+                ORDER BY c.FechaCreacion DESC";
 
             using (var connection = _context.CreateConnection())
             {
@@ -61,7 +64,57 @@ namespace AngularApp1.Server.Repositories
                         return currentConsignation;
                     },
                     new { StatusId = statusId },
-                    splitOn: "FileUrl,Id"
+                    splitOn: "Id"
+                );
+
+                return dict.Values;
+            }
+        }
+
+        public async Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync()
+        {
+            var query = @"
+                SELECT 
+                    c.Id, c.EmpresaId AS CompanyId, comp.Nombre AS CompanyName, c.PuntoVentaId AS StoreId,
+                    s.Nombre AS StoreName, c.BancoId AS BankId, b.Nombre AS BankName, c.EstadoId AS StatusId,
+                    est.Nombre AS StatusName,
+                    c.NumeroReferencia AS ReferenceNumber, c.MontoDeclarado AS DeclaredAmount, c.MontoDetectado AS DetectedAmount,
+                    c.FechaConsignacion::timestamp AS ConsignationDate, c.HoraConsignacion::interval AS ConsignationTime,
+                    c.Observaciones AS Notes, u1.NombreCompleto AS CreatedByName, u2.NombreCompleto AS ValidatedByName,
+                    c.FechaValidacion AS ValidationDate, c.FechaCreacion AS CreatedAt,
+                    f.UrlArchivo AS FileUrl,
+                    o.Id, o.ConsignacionId AS ConsignationId, o.BancoDetectado AS DetectedBank, o.ReferenciaDetectada AS DetectedReference,
+                    o.MontoDetectado AS DetectedAmount, o.FechaDetectada::timestamp AS DetectedDate,
+                    o.Confianza AS Confidence, o.TextoCrudo AS RawText, o.FechaProcesamiento AS ProcessedAt
+                FROM Flow_tblConsignaciones c
+                INNER JOIN Flow_tblEmpresas comp ON c.EmpresaId = comp.Id
+                INNER JOIN Flow_tblPuntosVenta s ON c.PuntoVentaId = s.Id
+                INNER JOIN Flow_tblBancos b ON c.BancoId = b.Id
+                INNER JOIN Flow_tblEstadosConsignacion est ON c.EstadoId = est.Id
+                LEFT JOIN Flow_tblUsuarios u1 ON c.CreadoPor = u1.Id
+                LEFT JOIN Flow_tblUsuarios u2 ON c.ValidadoPor = u2.Id
+                LEFT JOIN Flow_tblArchivosConsignacion f ON c.Id = f.ConsignacionId
+                LEFT JOIN Flow_tblResultadosOcr o ON c.Id = o.ConsignacionId
+                ORDER BY c.FechaCreacion DESC";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var dict = new Dictionary<long, GetConsignation>();
+
+                await connection.QueryAsync<GetConsignation, OcrResult, GetConsignation>(
+                    query,
+                    (consignation, ocr) =>
+                    {
+                        if (!dict.TryGetValue(consignation.Id, out var currentConsignation))
+                        {
+                            currentConsignation = consignation;
+                            dict.Add(currentConsignation.Id, currentConsignation);
+                        }
+
+                        currentConsignation.Ocr = ocr;
+                        return currentConsignation;
+                    },
+                    splitOn: "Id"
                 );
 
                 return dict.Values;
@@ -72,23 +125,26 @@ namespace AngularApp1.Server.Repositories
         {
             var query = @"
                 SELECT 
-                    c.Id, c.CompanyId, comp.Nombre AS CompanyName, c.StoreId, s.Nombre AS StoreName,
-                    c.BankId, b.Nombre AS BankName, c.StatusId,
-                    CASE WHEN c.StatusId = 1 THEN 'Pendiente' WHEN c.StatusId = 2 THEN 'Validada' ELSE 'Discrepancia' END AS StatusName,
-                    c.ReferenceNumber, c.DeclaredAmount, c.DetectedAmount, c.ConsignationDate, c.ConsignationTime,
-                    c.Notes, u1.NombreCompleto AS CreatedByName, u2.NombreCompleto AS ValidatedByName,
-                    c.ValidationDate, c.CreatedAt,
-                    f.FileUrl,
-                    o.Id, o.ConsignationId, o.DetectedBank, o.DetectedReference, o.DetectedAmount, 
-                    o.DetectedDate, o.Confidence, o.RawText, o.ProcessedAt
-                FROM Flow_tblConsignations c
-                INNER JOIN Flow_tblEmpresas comp ON c.CompanyId = comp.Id
-                INNER JOIN Flow_tblPuntosVenta s ON c.StoreId = s.Id
-                INNER JOIN Flow_tblBancos b ON c.BankId = b.Id
-                LEFT JOIN Flow_tblUsuarios u1 ON c.CreatedBy = u1.Id
-                LEFT JOIN Flow_tblUsuarios u2 ON c.ValidatedBy = u2.Id
-                LEFT JOIN Flow_tblConsignationFiles f ON c.Id = f.ConsignationId
-                LEFT JOIN Flow_tblOcrResults o ON c.Id = o.ConsignationId
+                    c.Id, c.EmpresaId AS CompanyId, comp.Nombre AS CompanyName, c.PuntoVentaId AS StoreId,
+                    s.Nombre AS StoreName, c.BancoId AS BankId, b.Nombre AS BankName, c.EstadoId AS StatusId,
+                    est.Nombre AS StatusName,
+                    c.NumeroReferencia AS ReferenceNumber, c.MontoDeclarado AS DeclaredAmount, c.MontoDetectado AS DetectedAmount,
+                    c.FechaConsignacion::timestamp AS ConsignationDate, c.HoraConsignacion::interval AS ConsignationTime,
+                    c.Observaciones AS Notes, u1.NombreCompleto AS CreatedByName, u2.NombreCompleto AS ValidatedByName,
+                    c.FechaValidacion AS ValidationDate, c.FechaCreacion AS CreatedAt,
+                    f.UrlArchivo AS FileUrl,
+                    o.Id, o.ConsignacionId AS ConsignationId, o.BancoDetectado AS DetectedBank, o.ReferenciaDetectada AS DetectedReference,
+                    o.MontoDetectado AS DetectedAmount, o.FechaDetectada::timestamp AS DetectedDate,
+                    o.Confianza AS Confidence, o.TextoCrudo AS RawText, o.FechaProcesamiento AS ProcessedAt
+                FROM Flow_tblConsignaciones c
+                INNER JOIN Flow_tblEmpresas comp ON c.EmpresaId = comp.Id
+                INNER JOIN Flow_tblPuntosVenta s ON c.PuntoVentaId = s.Id
+                INNER JOIN Flow_tblBancos b ON c.BancoId = b.Id
+                INNER JOIN Flow_tblEstadosConsignacion est ON c.EstadoId = est.Id
+                LEFT JOIN Flow_tblUsuarios u1 ON c.CreadoPor = u1.Id
+                LEFT JOIN Flow_tblUsuarios u2 ON c.ValidadoPor = u2.Id
+                LEFT JOIN Flow_tblArchivosConsignacion f ON c.Id = f.ConsignacionId
+                LEFT JOIN Flow_tblResultadosOcr o ON c.Id = o.ConsignacionId
                 WHERE c.Id = @Id";
 
             using (var connection = _context.CreateConnection())
@@ -109,7 +165,7 @@ namespace AngularApp1.Server.Repositories
                         return currentConsignation;
                     },
                     new { Id = id },
-                    splitOn: "FileUrl,Id"
+                    splitOn: "Id"
                 );
 
                 return dict.Values.FirstOrDefault();
@@ -128,9 +184,9 @@ namespace AngularApp1.Server.Repositories
                     try
                     {
                         var insertConsignation = @"
-                            INSERT INTO Flow_tblConsignations 
-                            (CompanyId, StoreId, BankId, StatusId, ReferenceNumber, DeclaredAmount, DetectedAmount, 
-                             ConsignationDate, ConsignationTime, Notes, CreatedBy, CreatedAt)
+                            INSERT INTO Flow_tblConsignaciones 
+                            (EmpresaId, PuntoVentaId, BancoId, EstadoId, NumeroReferencia, MontoDeclarado, MontoDetectado, 
+                             FechaConsignacion, HoraConsignacion, Observaciones, CreadoPor, FechaCreacion)
                             VALUES 
                             (@CompanyId, @StoreId, @BankId, @StatusId, @ReferenceNumber, @DeclaredAmount, @DetectedAmount,
                              @ConsignationDate, @ConsignationTime, @Notes, @CreatedBy, @CreatedAt)
@@ -140,8 +196,8 @@ namespace AngularApp1.Server.Repositories
                         c.Id = id;
 
                         var insertFile = @"
-                            INSERT INTO Flow_tblConsignationFiles 
-                            (ConsignationId, FileName, FileUrl, FileType, FileSize, UploadedAt)
+                            INSERT INTO Flow_tblArchivosConsignacion 
+                            (ConsignacionId, NombreArchivo, UrlArchivo, TipoArchivo, TamanoArchivo, FechaSubida)
                             VALUES 
                             (@ConsignationId, @FileName, @FileUrl, @FileType, @FileSize, @UploadedAt);";
                         
@@ -149,9 +205,9 @@ namespace AngularApp1.Server.Repositories
                         await connection.ExecuteAsync(insertFile, f, transaction);
 
                         var insertOcr = @"
-                            INSERT INTO Flow_tblOcrResults 
-                            (ConsignationId, DetectedBank, DetectedReference, DetectedAmount, DetectedDate, 
-                             Confidence, RawText, ProcessedAt)
+                            INSERT INTO Flow_tblResultadosOcr 
+                            (ConsignacionId, BancoDetectado, ReferenciaDetectada, MontoDetectado, FechaDetectada, 
+                             Confianza, TextoCrudo, FechaProcesamiento)
                             VALUES 
                             (@ConsignationId, @DetectedBank, @DetectedReference, @DetectedAmount, @DetectedDate,
                              @Confidence, @RawText, @ProcessedAt);";
@@ -174,11 +230,11 @@ namespace AngularApp1.Server.Repositories
         public async Task<bool> UpdateStatusAsync(long id, short statusId, long validatorId, string comments)
         {
             var query = @"
-                UPDATE Flow_tblConsignations
-                SET StatusId = @StatusId, 
-                    ValidatedBy = @ValidatorId, 
-                    ValidationDate = @ValidationDate, 
-                    Notes = COALESCE(Notes, '') || CHR(10) || @Comments
+                UPDATE Flow_tblConsignaciones
+                SET EstadoId = @StatusId, 
+                    ValidadoPor = @ValidatorId, 
+                    FechaValidacion = @ValidationDate, 
+                    Observaciones = COALESCE(Observaciones, '') || CHR(10) || @Comments
                 WHERE Id = @Id;";
 
             using (var connection = _context.CreateConnection())

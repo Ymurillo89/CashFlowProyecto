@@ -9,7 +9,7 @@ namespace AngularApp1.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador")]
+    [Authorize]
     public class StoreController : ControllerBase
     {
         private readonly IStoreService _storeService;
@@ -37,6 +37,7 @@ namespace AngularApp1.Server.Controllers
             return Ok(store);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
@@ -44,6 +45,7 @@ namespace AngularApp1.Server.Controllers
             return CreatedAtAction(nameof(GetStore), new { id = createdStore.Id }, createdStore);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStore(long id, Store store)
         {
@@ -56,6 +58,7 @@ namespace AngularApp1.Server.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(long id)
         {

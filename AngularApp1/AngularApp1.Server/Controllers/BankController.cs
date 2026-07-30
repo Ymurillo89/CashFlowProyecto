@@ -12,7 +12,7 @@ namespace AngularApp1.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador")]
+    [Authorize]
     public class BankController : ControllerBase
     {
         private readonly IBankService _service;
@@ -54,6 +54,7 @@ namespace AngularApp1.Server.Controllers
             }
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         public async Task<ActionResult<Result>> PostBank([FromBody] PostBank model)
         {
@@ -71,6 +72,7 @@ namespace AngularApp1.Server.Controllers
             }
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPut("{id}")]
         public async Task<ActionResult<Result>> PutBank(short id, [FromBody] PostBank model)
         {
@@ -88,6 +90,7 @@ namespace AngularApp1.Server.Controllers
             }
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Result>> DeleteBank(short id)
         {

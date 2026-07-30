@@ -15,6 +15,9 @@ builder.Services.AddScoped<AngularApp1.Server.Repositories.IUserRepository, Angu
 builder.Services.AddScoped<AngularApp1.Server.Repositories.IRoleRepository, AngularApp1.Server.Repositories.RoleRepository>();
 builder.Services.AddScoped<AngularApp1.Server.Repositories.IConsignationRepository, AngularApp1.Server.Repositories.ConsignationRepository>();
 
+// ── HTTP Clients ────────────────────────────────────────────────────────────
+builder.Services.AddHttpClient<AngularApp1.Server.Services.IOcrService, AngularApp1.Server.Services.OcrService>();
+
 // ── DI: Services ─────────────────────────────────────────────────────────────
 builder.Services.AddScoped<AngularApp1.Server.Services.CompanyService>();
 builder.Services.AddScoped<AngularApp1.Server.Services.IStoreService, AngularApp1.Server.Services.StoreService>();

@@ -44,7 +44,8 @@
             <div class="reticle-corner reticle-bottom-left"></div>
             <div class="reticle-corner reticle-bottom-right"></div>
             <div class="h-48 bg-panel-bg flex items-center justify-center overflow-hidden">
-              <span class="font-mono text-xs text-text-muted tracking-wider uppercase">
+              <img *ngIf="imagePreviewUrl" [src]="imagePreviewUrl" alt="Recibo" class="max-w-full max-h-full object-contain" />
+              <span *ngIf="!imagePreviewUrl" class="font-mono text-xs text-text-muted tracking-wider uppercase">
                 [ {{ uploadedFile.name }} ]
               </span>
             </div>
@@ -139,21 +140,18 @@
       <div class="space-y-4">
         <div>
           <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Punto de Venta (Sucursal)</label>
-          <select 
-            [(ngModel)]="selectedStoreId"
-            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
-            <option [value]="null">Seleccionar Sucursal</option>
-            <option *ngFor="let s of stores" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
-          </select>
+          <div class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main">
+            {{ storeName }}
+          </div>
         </div>
 
         <div>
           <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Monto Declarado ($)</label>
           <input 
-            type="number" 
-            [(ngModel)]="declaredAmount"
-            placeholder="0.00" 
-            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+            type="text" 
+            (input)="onAmountInput($event)"
+            placeholder="0"
+            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main text-right focus:outline-none focus:border-brand-primary" />
         </div>
 
         <div>
@@ -174,7 +172,14 @@
             placeholder="Ej. TX-129381" 
             class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
         </div>
-
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Notas de Conciliación</label>
+          <textarea 
+            [(ngModel)]="declaredNotes"
+            placeholder="Escriba comentarios u observaciones aquí..." 
+            rows="3"
+            class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary resize-none"></textarea>
+        </div>
         <div class="pt-4">
           <button 
             (click)="submitDeposit()"

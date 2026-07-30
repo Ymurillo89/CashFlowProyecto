@@ -20,12 +20,27 @@ namespace AngularApp1.Server.Controllers
             _service = service;
         }
 
+
         [HttpGet("pending")]
         public async Task<IActionResult> GetPending()
         {
             try
             {
                 var list = await _service.GetPendingConsignationsAsync();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var list = await _service.GetAllConsignationsAsync();
                 return Ok(list);
             }
             catch (Exception ex)

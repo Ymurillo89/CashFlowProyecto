@@ -14,6 +14,10 @@ export class ConsignationService {
     return this.http.get<Consignation[]>(`${this.apiUrl}/pending`);
   }
 
+  getAllConsignations(): Observable<Consignation[]> {
+    return this.http.get<Consignation[]>(this.apiUrl);
+  }
+
   getConsignationById(id: number): Observable<Consignation> {
     return this.http.get<Consignation>(`${this.apiUrl}/${id}`);
   }

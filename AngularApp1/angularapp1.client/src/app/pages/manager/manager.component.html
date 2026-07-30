@@ -1,17 +1,41 @@
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Tabs Header -->
+<div class="flex space-x-4 border-b border-panel-border pb-4 mb-6">
+  <button 
+    (click)="setTab('audit')"
+    [class.border-brand-primary]="currentTab === 'audit'"
+    [class.text-brand-primary]="currentTab === 'audit'"
+    [class.border-transparent]="currentTab !== 'audit'"
+    [class.text-text-muted]="currentTab !== 'audit'"
+    class="pb-2 text-xs font-mono uppercase tracking-widest border-b-2 font-bold focus:outline-none transition-all cursor-pointer">
+    [ 🛡️ Cola de Auditoría ]
+  </button>
+  <button 
+    (click)="setTab('reports')"
+    [class.border-brand-primary]="currentTab === 'reports'"
+    [class.text-brand-primary]="currentTab === 'reports'"
+    [class.border-transparent]="currentTab !== 'reports'"
+    [class.text-text-muted]="currentTab !== 'reports'"
+    class="pb-2 text-xs font-mono uppercase tracking-widest border-b-2 font-bold focus:outline-none transition-all cursor-pointer">
+    [ 📊 Reportes e Indicadores ]
+  </button>
+</div>
+
+<!-- TAB 1: AUDIT COLA -->
+<div *ngIf="currentTab === 'audit'" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
   
   <!-- Izquierda: Cola de Auditoría -->
   <div class="space-y-6">
     <div class="precision-panel p-6">
       <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
-        [ COLA DE AUDITORÍA : DISCREPANCIAS ]
+        [ COLA DE AUDITORÍA : PENDIENTES ]
       </h3>
       
-      <div class="space-y-2">
+      <div class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
         <div 
           *ngFor="let d of consignations" 
           (click)="selectConsignationForReview(d)"
           [class.border-brand-error]="d.detectedAmount !== d.declaredAmount && selectedConsignation?.id === d.id"
+          [class.border-brand-primary]="d.detectedAmount === d.declaredAmount && selectedConsignation?.id === d.id"
           [class.bg-panel-bg-active]="selectedConsignation?.id === d.id"
           class="p-4 border border-panel-border cursor-pointer hover:bg-panel-bg/30 transition flex flex-col space-y-2 relative">
           
@@ -39,6 +63,9 @@
               <span [class.text-brand-error]="d.detectedAmount !== d.declaredAmount" class="font-bold">${{ d.detectedAmount | number }}</span>
             </div>
           </div>
+        </div>
+        <div *ngIf="consignations.length === 0" class="text-center py-8 text-xs font-mono text-text-muted border border-dashed border-panel-border">
+          No hay consignaciones pendientes de validación.
         </div>
       </div>
     </div>
@@ -112,12 +139,17 @@
               </span>
             </div>
 
+            <div *ngIf="selectedConsignation.notes" class="border-b border-panel-border pb-3">
+              <span class="text-[10px] font-mono text-text-muted block uppercase">Notas de Conciliación (Cajero)</span>
+              <span class="text-xs font-mono italic text-text-main">"{{ selectedConsignation.notes }}"</span>
+            </div>
+
             <div>
-              <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Notas de Conciliación</label>
+              <label class="block text-[10px] font-mono uppercase text-text-muted mb-1">Notas de Conciliación (Auditor)</label>
               <textarea 
                 [(ngModel)]="reviewComments"
                 placeholder="Ingrese justificación o comentarios de resolución de discrepancia..." 
-                class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary h-24"></textarea>
+                class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary h-24 resize-none"></textarea>
             </div>
           </div>
         </div>
@@ -138,6 +170,218 @@
         </div>
       </div>
 
+    </div>
+  </div>
+  <div class="lg:col-span-2 precision-panel p-8 text-center flex flex-col justify-center items-center font-mono border-dashed border border-panel-border" *ngIf="!selectedConsignation">
+    <i class="pi pi-inbox text-4xl text-text-muted mb-3"></i>
+    <p class="text-xs text-text-muted">Seleccione una consignación de la cola para auditar.</p>
+  </div>
+</div>
+
+<!-- TAB 2: REPORTS & DASHBOARD -->
+<div *ngIf="currentTab === 'reports'" class="space-y-6 animate-fade-in">
+  
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    
+    <!-- KPI 1: Total Declarado -->
+    <div class="precision-panel p-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-3 opacity-10">
+        <i class="pi pi-wallet text-5xl text-brand-primary"></i>
+      </div>
+      <span class="text-[9px] font-mono text-text-muted uppercase tracking-widest block">Total Declarado</span>
+      <span class="text-2xl font-bold font-mono tracking-tight text-brand-primary mt-1 block">
+        ${{ stats.totalDeclared | number }}
+      </span>
+      <div class="text-[9px] font-mono text-text-muted mt-2">
+        Monto global ingresado por cajeros
+      </div>
+    </div>
+
+    <!-- KPI 2: Total Validado -->
+    <div class="precision-panel p-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-3 opacity-10">
+        <i class="pi pi-check-circle text-5xl text-brand-primary"></i>
+      </div>
+      <span class="text-[9px] font-mono text-text-muted uppercase tracking-widest block">Total Validado</span>
+      <span class="text-2xl font-bold font-mono tracking-tight text-green-400 mt-1 block">
+        ${{ stats.totalValidated | number }}
+      </span>
+      <div class="text-[9px] font-mono text-text-muted mt-2">
+        Conciliado exitosamente en bancos
+      </div>
+    </div>
+
+    <!-- KPI 3: Monto Discrepancias -->
+    <div class="precision-panel p-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-3 opacity-10">
+        <i class="pi pi-exclamation-triangle text-5xl text-brand-error"></i>
+      </div>
+      <span class="text-[9px] font-mono text-text-muted uppercase tracking-widest block">Discrepancias (Δ)</span>
+      <span class="text-2xl font-bold font-mono tracking-tight text-brand-error mt-1 block">
+        ${{ stats.totalDiscrepancyAmount | number }}
+      </span>
+      <div class="text-[9px] font-mono text-text-muted mt-2">
+        Diferencia detectada por AI OCR
+      </div>
+    </div>
+
+    <!-- KPI 4: Match Rate -->
+    <div class="precision-panel p-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-3 opacity-10">
+        <i class="pi pi-percentage text-5xl text-cyan-400"></i>
+      </div>
+      <span class="text-[9px] font-mono text-text-muted uppercase tracking-widest block">Match Rate (IA)</span>
+      <span class="text-2xl font-bold font-mono tracking-tight text-cyan-400 mt-1 block">
+        {{ stats.matchRate }}%
+      </span>
+      <div class="text-[9px] font-mono text-text-muted mt-2">
+        Coincidencia perfecta Declarado vs OCR
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts & Distributions -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Bank Distribution -->
+    <div class="precision-panel p-6 lg:col-span-2">
+      <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+        [ DISTRIBUCIÓN DE DEPÓSITOS POR BANCO ]
+      </h3>
+      <div class="space-y-4">
+        <div *ngFor="let b of stats.bankDistribution" class="space-y-2">
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-text-main font-bold">{{ b.name }}</span>
+            <span class="text-text-muted">${{ b.amount | number }} ({{ b.percent }}%)</span>
+          </div>
+          <!-- Progress bar container -->
+          <div class="w-full bg-app-bg h-2 rounded border border-panel-border overflow-hidden">
+            <div 
+              [style.width.%]="b.percent"
+              [style.background-color]="b.color"
+              class="h-full rounded transition-all duration-500 shadow-glow">
+            </div>
+          </div>
+        </div>
+        <div *ngIf="stats.bankDistribution.length === 0" class="text-center py-8 text-xs font-mono text-text-muted">
+          No hay datos de distribución bancaria disponibles.
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Breakdown -->
+    <div class="precision-panel p-6">
+      <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+        [ DESGLOSE DE ESTADOS ]
+      </h3>
+      <div class="space-y-4">
+        <!-- Progress bar stack -->
+        <div class="h-6 w-full rounded border border-panel-border bg-app-bg overflow-hidden flex font-mono text-[9px] text-white">
+          <div 
+            *ngIf="stats.validatedCount > 0" 
+            [style.width.%]="stats.validatedPercent" 
+            class="bg-green-500 flex items-center justify-center transition-all shadow-inner font-bold"
+            title="Validadas">
+            {{ stats.validatedPercent }}%
+          </div>
+          <div 
+            *ngIf="stats.pendingCount > 0" 
+            [style.width.%]="stats.pendingPercent" 
+            class="bg-amber-500 flex items-center justify-center transition-all shadow-inner font-bold"
+            title="Pendientes">
+            {{ stats.pendingPercent }}%
+          </div>
+          <div 
+            *ngIf="stats.discrepancyCount > 0" 
+            [style.width.%]="stats.discrepancyPercent" 
+            class="bg-rose-500 flex items-center justify-center transition-all shadow-inner font-bold"
+            title="Discrepancias">
+            {{ stats.discrepancyPercent }}%
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2 border-t border-panel-border/30">
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 bg-green-500 rounded-full inline-block"></span>
+              <span class="text-text-muted">Validadas</span>
+            </span>
+            <span class="text-text-main font-bold">{{ stats.validatedCount }}</span>
+          </div>
+
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 bg-amber-500 rounded-full inline-block"></span>
+              <span class="text-text-muted">Pendientes</span>
+            </span>
+            <span class="text-text-main font-bold">{{ stats.pendingCount }}</span>
+          </div>
+
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 bg-rose-500 rounded-full inline-block"></span>
+              <span class="text-text-muted">Discrepancias</span>
+            </span>
+            <span class="text-text-main font-bold">{{ stats.discrepancyCount }}</span>
+          </div>
+          
+          <div class="flex justify-between items-center text-xs font-mono border-t border-panel-border/30 pt-2 font-bold">
+            <span class="text-text-muted">Total Transacciones</span>
+            <span class="text-brand-primary">{{ stats.totalCount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Log -->
+  <div class="precision-panel p-6">
+    <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">
+      [ REGISTRO HISTÓRICO GENERAL DE CONSIGNACIONES ]
+    </h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left font-mono text-xs border-collapse">
+        <thead>
+          <tr class="border-b border-panel-border text-text-muted text-[10px] uppercase">
+            <th class="pb-3 pr-2">ID</th>
+            <th class="pb-3 pr-2">Fecha</th>
+            <th class="pb-3 pr-2">Sucursal</th>
+            <th class="pb-3 pr-2">Banco</th>
+            <th class="pb-3 pr-2 text-right">Monto Declarado</th>
+            <th class="pb-3 pr-2 text-right">Monto OCR</th>
+            <th class="pb-3 pr-2 text-center">Referencia</th>
+            <th class="pb-3 text-center">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of allConsignations" class="border-b border-panel-border/30 hover:bg-panel-bg/25 transition">
+            <td class="py-3 font-bold text-text-main">#{{ c.id }}</td>
+            <td class="py-3 text-text-muted">{{ c.consignationDate | date:'dd/MM/yyyy' }}</td>
+            <td class="py-3 text-text-main">{{ c.storeName }}</td>
+            <td class="py-3 text-text-main">{{ c.bankName }}</td>
+            <td class="py-3 text-right font-bold text-text-main">${{ c.declaredAmount | number }}</td>
+            <td class="py-3 text-right font-bold text-cyan-400">${{ c.detectedAmount | number }}</td>
+            <td class="py-3 text-center text-text-muted">{{ c.referenceNumber }}</td>
+            <td class="py-3 text-center">
+              <span 
+                [ngClass]="{
+                  'bg-green-500/10 text-green-400 border-green-500/30': c.statusName === 'Validada',
+                  'bg-amber-500/10 text-amber-400 border-amber-500/30': c.statusName === 'Pendiente',
+                  'bg-rose-500/10 text-rose-400 border-rose-500/30': c.statusName === 'Discrepancia'
+                }"
+                class="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border">
+                {{ c.statusName }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="allConsignations.length === 0">
+            <td colspan="8" class="text-center py-6 text-text-muted">
+              No hay registros en el historial.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
