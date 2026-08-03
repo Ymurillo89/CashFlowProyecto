@@ -8,10 +8,10 @@ namespace AngularApp1.Server.Services
 {
     public interface IConsignationService
     {
-        Task<IEnumerable<GetConsignation>> GetPendingConsignationsAsync();
-        Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync();
+        Task<IEnumerable<GetConsignation>> GetPendingConsignationsAsync(long? userId = null, string? roleName = null);
+        Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync(long? userId = null, string? roleName = null);
         Task<GetConsignation> GetConsignationByIdAsync(long id);
-        Task<long> SubmitConsignationAsync(PostConsignation request, IFormFile file);
-        Task<bool> AuditConsignationAsync(long id, AuditConsignation request);
+        Task<long> SubmitConsignationAsync(PostConsignation request, IFormFile file, long createdBy);
+        Task<bool> AuditConsignationAsync(long id, AuditConsignation request, long validatorId);
     }
 }

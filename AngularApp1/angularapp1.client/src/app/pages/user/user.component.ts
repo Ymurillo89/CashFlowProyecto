@@ -31,6 +31,7 @@ export class UserComponent implements OnInit {
   displayUserDialog: boolean = false;
   userForm: Partial<User> = {};
   isEditingUser: boolean = false;
+  storeFilter: string = '';
 
   ngOnInit() {
     this.loadAllData();
@@ -81,18 +82,57 @@ export class UserComponent implements OnInit {
     }
   }
 
+  get filteredAndSearchedStores(): Store[] {
+    if (!this.storeFilter) {
+      return this.filteredStores;
+    }
+    const filter = this.storeFilter.toLowerCase();
+    return this.filteredStores.filter(s => 
+      s.name.toLowerCase().includes(filter) || s.code.toLowerCase().includes(filter)
+    );
+  }
+
   showAddUserDialog() {
-    this.userForm = { isActive: true, roleId: undefined, companyId: undefined, storeId: null };
+    this.userForm = { isActive: true, roleId: undefined, companyId: undefined, storeId: null, assignedStoreIds: [] };
     this.filteredStores = [];
+    this.storeFilter = '';
     this.isEditingUser = false;
     this.displayUserDialog = true;
   }
 
   showEditUserDialog(user: User) {
-    this.userForm = { ...user, password: '' };
+    this.userForm = { ...user, assignedStoreIds: [...(user.assignedStoreIds || [])], password: '' };
+    this.storeFilter = '';
     this.isEditingUser = true;
     this.displayUserDialog = true;
     this.onCompanyChange();
+  }
+
+  isStoreSelected(storeId: number): boolean {
+    if (!this.userForm.assignedStoreIds) return false;
+    return this.userForm.assignedStoreIds.includes(storeId);
+  }
+
+  toggleStoreSelection(storeId: number) {
+    if (!this.userForm.assignedStoreIds) {
+      this.userForm.assignedStoreIds = [];
+    }
+    const idx = this.userForm.assignedStoreIds.indexOf(storeId);
+    if (idx > -1) {
+      this.userForm.assignedStoreIds.splice(idx, 1);
+    } else {
+      this.userForm.assignedStoreIds.push(storeId);
+    }
+  }
+
+  getAssignedStoreNames(user: User): string {
+    if (!user.assignedStoreIds || user.assignedStoreIds.length === 0) {
+      return user.storeName ? user.storeName : 'Ninguno (Admin Empresa)';
+    }
+    return user.assignedStoreIds
+      .map(id => this.stores.find(s => s.id === id)?.name)
+      .filter(name => !!name)
+      .join(', ');
   }
 
   saveUser() {
@@ -106,15 +146,32 @@ export class UserComponent implements OnInit {
       return;
     }
 
+    const selectedStores = this.userForm.assignedStoreIds || [];
+    const roleIdNum = Number(this.userForm.roleId);
+    
+    let storeIdVal: number | null = null;
+    let storeIdsList: number[] = [];
+
+    if (roleIdNum === 2) {
+      // Gerente Sucursal
+      storeIdVal = selectedStores.length > 0 ? Number(selectedStores[0]) : null;
+      storeIdsList = selectedStores.map(Number);
+    } else if (roleIdNum === 3) {
+      // Cajero
+      storeIdVal = this.userForm.storeId ? Number(this.userForm.storeId) : null;
+      storeIdsList = storeIdVal ? [storeIdVal] : [];
+    }
+
     // Prepare payload
     const payload: User = {
       companyId: Number(this.userForm.companyId),
-      storeId: this.userForm.storeId ? Number(this.userForm.storeId) : null,
-      roleId: Number(this.userForm.roleId),
+      storeId: storeIdVal,
+      roleId: roleIdNum,
       fullName: this.userForm.fullName,
       email: this.userForm.email,
       password: this.userForm.password || undefined,
-      isActive: !!this.userForm.isActive
+      isActive: !!this.userForm.isActive,
+      assignedStoreIds: storeIdsList
     };
 
     if (this.isEditingUser) {

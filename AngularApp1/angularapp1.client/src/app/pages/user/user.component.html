@@ -1,17 +1,27 @@
 <div class="precision-panel p-6">
-  <div class="flex justify-between items-center mb-4">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
     <h3 class="text-xs font-mono uppercase tracking-widest text-text-muted">
       [ REGISTRO MAESTRO : USUARIOS ]
     </h3>
-    <button 
-      (click)="showAddUserDialog()"
-      class="p-button-success p-button-sm font-mono text-xs uppercase"
-      pButton 
-      label="Agregar Usuario">
-    </button>
+    <div class="flex items-center space-x-2 w-full md:w-auto">
+      <div class="relative w-full md:w-64">
+        <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-text-muted"></i>
+        <input 
+          type="text" 
+          (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+          placeholder="Buscar usuario..." 
+          class="w-full bg-app-bg border border-panel-border pl-8 pr-3 py-1.5 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+      </div>
+      <button 
+        (click)="showAddUserDialog()"
+        class="p-button-success p-button-sm font-mono text-xs uppercase whitespace-nowrap"
+        pButton 
+        label="Agregar Usuario">
+      </button>
+    </div>
   </div>
 
-  <p-table [value]="users" styleClass="p-datatable-sm font-mono text-xs">
+  <p-table #dt [value]="users" [globalFilterFields]="['fullName', 'email', 'roleName', 'companyName', 'storeName']" styleClass="p-datatable-sm font-mono text-xs">
     <ng-template pTemplate="header">
       <tr class="border-b border-panel-border text-left uppercase text-text-muted">
         <th class="py-2">ID</th>
@@ -36,7 +46,7 @@
         </td>
         <td class="py-2">{{ user.companyName }}</td>
         <td class="py-2">
-          {{ user.storeName ? user.storeName : 'Ninguno (Admin Empresa)' }}
+          {{ getAssignedStoreNames(user) }}
         </td>
         <td class="py-2">
           <span [class.text-brand-primary]="user.isActive" [class.text-brand-error]="!user.isActive">
@@ -99,15 +109,79 @@
       </select>
     </div>
 
-    <div>
-      <label class="block text-[10px] uppercase text-text-muted mb-1">Punto de Venta / Sucursal</label>
-      <select 
-        [(ngModel)]="userForm.storeId"
-        class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary"
-        [disabled]="!userForm.companyId">
-        <option [value]="null">Ninguno (Administrador de Empresa)</option>
-        <option *ngFor="let s of filteredStores" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
-      </select>
+    <!-- Single select for Cajero only (Searchable Radio List) -->
+    <div *ngIf="userForm.roleId == 3" class="space-y-2">
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Punto de Venta / Sucursal (Selección Única)</label>
+      
+      <!-- Buscador de Tiendas para Cajero -->
+      <div class="relative flex items-center" *ngIf="filteredStores.length > 0">
+        <input 
+          type="text" 
+          [(ngModel)]="storeFilter" 
+          placeholder="🔍 Buscar tienda..." 
+          class="w-full bg-app-bg border border-panel-border p-1.5 text-[10px] font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+        <button 
+          *ngIf="storeFilter"
+          (click)="storeFilter = ''"
+          class="absolute right-2 top-2 text-[10px] text-text-muted hover:text-brand-error focus:outline-none font-bold">
+          ✕
+        </button>
+      </div>
+
+      <div class="border border-panel-border bg-app-bg max-h-36 overflow-y-auto p-3 space-y-2 rounded">
+        <div *ngIf="filteredAndSearchedStores.length === 0" class="text-[10px] text-text-muted italic">
+          {{ filteredStores.length === 0 ? 'Seleccione una Empresa primero' : 'No se encontraron tiendas' }}
+        </div>
+        <div *ngFor="let s of filteredAndSearchedStores" class="flex items-center space-x-2">
+          <input 
+            type="radio" 
+            [id]="'cashier-store-' + s.id" 
+            name="cashierStore"
+            [value]="s.id"
+            [(ngModel)]="userForm.storeId"
+            class="accent-brand-primary" />
+          <label [for]="'cashier-store-' + s.id" class="text-xs font-mono text-text-main cursor-pointer select-none">
+            {{ s.name }} ({{ s.code }})
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-select checkbox list for managers -->
+    <div *ngIf="userForm.roleId == 2" class="space-y-2">
+      <label class="block text-[10px] uppercase text-text-muted mb-1">Puntos de Venta Asignados (Múltiple)</label>
+      
+      <!-- Buscador de Tiendas -->
+      <div class="relative flex items-center" *ngIf="filteredStores.length > 0">
+        <input 
+          type="text" 
+          [(ngModel)]="storeFilter" 
+          placeholder="🔍 Buscar tienda..." 
+          class="w-full bg-app-bg border border-panel-border p-1.5 text-[10px] font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+        <button 
+          *ngIf="storeFilter"
+          (click)="storeFilter = ''"
+          class="absolute right-2 top-2 text-[10px] text-text-muted hover:text-brand-error focus:outline-none font-bold">
+          ✕
+        </button>
+      </div>
+
+      <div class="border border-panel-border bg-app-bg max-h-36 overflow-y-auto p-3 space-y-2 rounded">
+        <div *ngIf="filteredAndSearchedStores.length === 0" class="text-[10px] text-text-muted italic">
+          {{ filteredStores.length === 0 ? 'Seleccione una Empresa primero' : 'No se encontraron tiendas' }}
+        </div>
+        <div *ngFor="let s of filteredAndSearchedStores" class="flex items-center space-x-2">
+          <input 
+            type="checkbox" 
+            [id]="'store-' + s.id" 
+            [checked]="isStoreSelected(s.id)" 
+            (change)="toggleStoreSelection(s.id)" 
+            class="accent-brand-primary" />
+          <label [for]="'store-' + s.id" class="text-xs font-mono text-text-main cursor-pointer select-none">
+            {{ s.name }} ({{ s.code }})
+          </label>
+        </div>
+      </div>
     </div>
 
     <div class="flex items-center space-x-2">

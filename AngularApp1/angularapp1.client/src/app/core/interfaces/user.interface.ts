@@ -10,5 +10,6 @@ export interface User {
   email: string;
   password?: string;
   isActive: boolean;
+  assignedStoreIds?: number[];
   createdAt?: string;
 }

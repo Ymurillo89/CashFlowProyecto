@@ -143,7 +143,33 @@ CREATE TABLE IF NOT EXISTS Flow_tblResultadosOcr (
         ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS Flow_tblUsuarioPuntosVenta (
+    UsuarioId      BIGINT NOT NULL,
+    PuntoVentaId   BIGINT NOT NULL,
+    PRIMARY KEY (UsuarioId, PuntoVentaId),
+    CONSTRAINT fk_upv_usuario FOREIGN KEY(UsuarioId) REFERENCES Flow_tblUsuarios(Id) ON DELETE CASCADE,
+    CONSTRAINT fk_upv_punto FOREIGN KEY(PuntoVentaId) REFERENCES Flow_tblPuntosVenta(Id) ON DELETE CASCADE
+);
+
 -- Datos iniciales básicos para catálogos
 INSERT INTO Flow_tblRoles (Nombre) VALUES ('Administrador'), ('Gerente Sucursal'), ('Cajero') ON CONFLICT DO NOTHING;
-INSERT INTO Flow_tblEstadosConsignacion (Nombre) VALUES ('Pendiente'), ('Validada'), ('Discrepancia'), ('Error IA') ON CONFLICT DO NOTHING;
+INSERT INTO Flow_tblEstadosConsignacion (Nombre) VALUES ('Pendiente'), ('Validada'), ('Discrepancia'), ('Lectura Ilegible') ON CONFLICT DO NOTHING;
 INSERT INTO Flow_tblBancos (Nombre, Codigo) VALUES ('Bancolombia', '007'), ('Davivienda', '051'), ('Banco de Bogotá', '001') ON CONFLICT DO NOTHING;
+
+-- Seed de Empresas Adicionales
+INSERT INTO Flow_tblEmpresas (Nombre, Nit, Email, Telefono, Direccion, Activo)
+VALUES 
+('Supermercados Éxito', '900.123.456-1', 'contacto@exito.com.co', '4440000', 'Calle 10 # 30-10, Medellín', true),
+('Tiendas D1', '800.987.654-2', 'contacto@tiendasd1.com', '5551111', 'Carrera 43A # 1-50, Envigado', true)
+ON CONFLICT DO NOTHING;
+
+-- Seed de Puntos de Venta Adicionales (usando subqueries para IDs)
+INSERT INTO Flow_tblPuntosVenta (EmpresaId, Codigo, Nombre, Ciudad, Direccion, Activo)
+VALUES
+((SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Supermercados Éxito'), 'POS-E01', 'Éxito Envigado', 'Medellín', 'Dirección Envigado', true),
+((SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Supermercados Éxito'), 'POS-E02', 'Éxito Poblado', 'Medellín', 'Dirección Poblado', true),
+((SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Supermercados Éxito'), 'POS-E03', 'Éxito Laureles', 'Medellín', 'Dirección Laureles', true),
+((SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Tiendas D1'), 'POS-D01', 'D1 Belén', 'Medellín', 'Dirección Belén', true),
+((SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Tiendas D1'), 'POS-D02', 'D1 Estadio', 'Medellín', 'Dirección Estadio', true),
+((SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Tiendas D1'), 'POS-D03', 'D1 Calasanz', 'Medellín', 'Dirección Calasanz', true)
+ON CONFLICT DO NOTHING;

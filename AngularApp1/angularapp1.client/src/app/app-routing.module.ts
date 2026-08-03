@@ -14,12 +14,12 @@ const routes: Routes = [
   // Public route
   { path: 'login', component: LoginComponent },
 
-  // Cashier: Cajero, Gerente Sucursal, Administrador
+  // Cashier: Cajero only
   {
     path: 'cashier',
     component: CashierComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['Cajero', 'Gerente Sucursal', 'Administrador'] }
+    data: { roles: ['Cajero'] }
   },
 
   // Manager: Gerente Sucursal, Administrador

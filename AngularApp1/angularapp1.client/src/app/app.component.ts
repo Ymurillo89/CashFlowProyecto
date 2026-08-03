@@ -45,6 +45,10 @@ export class AppComponent {
     return this.authService.hasAnyRole(['Gerente Sucursal', 'Administrador']);
   }
 
+  get isCashier(): boolean {
+    return this.authService.hasRole('Cajero');
+  }
+
   ngOnInit() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)

@@ -30,9 +30,61 @@
         [ COLA DE AUDITORÍA : PENDIENTES ]
       </h3>
       
+      <!-- Filtros rápidos de Cola -->
+      <div class="space-y-3 mb-4">
+        <!-- Input de Búsqueda -->
+        <div class="relative flex items-center">
+          <input 
+            type="text" 
+            [(ngModel)]="queueSearchQuery" 
+            placeholder="🔍 Buscar en cola (ID, sucursal, ref)..." 
+            class="w-full bg-app-bg border border-panel-border p-2 text-[10px] font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+          <button 
+            *ngIf="queueSearchQuery"
+            (click)="queueSearchQuery = ''"
+            class="absolute right-2 top-2.5 text-[9px] text-text-muted hover:text-brand-error focus:outline-none font-bold bg-transparent border-0 cursor-pointer">
+            ✕
+          </button>
+        </div>
+
+        <!-- Botones de Filtro de Estado -->
+        <div class="flex flex-wrap gap-1">
+          <button 
+            (click)="queueTypeFilter = 'all'"
+            [ngClass]="{
+              'bg-brand-primary/20 border-brand-primary text-brand-primary': queueTypeFilter === 'all',
+              'border-panel-border text-text-muted': queueTypeFilter !== 'all'
+            }"
+            class="px-2 py-1 text-[9px] font-mono uppercase border tracking-wider focus:outline-none transition cursor-pointer bg-transparent">
+            Todos
+          </button>
+          <button 
+            (click)="queueTypeFilter = 'discrepancy'"
+            [ngClass]="{
+              'bg-brand-error/20 border-brand-error text-brand-error': queueTypeFilter === 'discrepancy',
+              'border-panel-border text-text-muted': queueTypeFilter !== 'discrepancy'
+            }"
+            class="px-2 py-1 text-[9px] font-mono uppercase border tracking-wider focus:outline-none transition cursor-pointer bg-transparent">
+            Discrepancia
+          </button>
+          <button 
+            (click)="queueTypeFilter = 'illegible'"
+            [ngClass]="{
+              'bg-indigo-500/20 border-indigo-500 text-indigo-400': queueTypeFilter === 'illegible',
+              'border-panel-border text-text-muted': queueTypeFilter !== 'illegible'
+            }"
+            class="px-2 py-1 text-[9px] font-mono uppercase border tracking-wider focus:outline-none transition cursor-pointer bg-transparent">
+            Ilegible
+          </button>
+        </div>
+      </div>
+
       <div class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+        <div *ngIf="filteredQueueConsignations.length === 0" class="text-center py-6 text-text-muted text-[10px] italic font-mono">
+          No hay consignaciones con estos filtros.
+        </div>
         <div 
-          *ngFor="let d of consignations" 
+          *ngFor="let d of filteredQueueConsignations" 
           (click)="selectConsignationForReview(d)"
           [class.border-brand-error]="d.detectedAmount !== d.declaredAmount && selectedConsignation?.id === d.id"
           [class.border-brand-primary]="d.detectedAmount === d.declaredAmount && selectedConsignation?.id === d.id"
@@ -42,10 +94,13 @@
           <div class="flex justify-between items-center">
             <span class="font-mono text-xs font-bold text-text-main">ID #{{ d.id }}</span>
             <span 
-              [class.text-brand-error]="d.detectedAmount !== d.declaredAmount"
-              [class.text-brand-primary]="d.detectedAmount === d.declaredAmount"
+              [ngClass]="{
+                'text-brand-error': d.statusId === 3,
+                'text-indigo-400': d.statusId === 4,
+                'text-brand-primary': d.statusId === 1 || d.statusId === 2
+              }"
               class="font-mono text-[9px] uppercase font-bold tracking-widest">
-              {{ d.detectedAmount === d.declaredAmount ? 'Coincide' : 'Discrepancia' }}
+              {{ d.statusName }}
             </span>
           </div>
 
@@ -139,6 +194,68 @@
               </span>
             </div>
 
+            <!-- Attribute Comparison Table -->
+            <div class="border border-panel-border bg-app-bg/50 p-4 space-y-3 font-mono text-xs">
+              <div class="text-[10px] text-text-muted uppercase tracking-widest border-b border-panel-border pb-1 font-bold">
+                [ COMPARATIVA DE ATRIBUTOS ]
+              </div>
+              
+              <!-- Header -->
+              <div class="grid grid-cols-3 gap-2 text-[9px] text-text-muted uppercase font-bold pb-1 border-b border-panel-border/30">
+                <span>Atributo</span>
+                <span>Declarado</span>
+                <span class="text-right">Extraído (OCR)</span>
+              </div>
+
+              <!-- Banco -->
+              <div class="grid grid-cols-3 gap-2 py-1 items-center">
+                <span class="text-text-muted uppercase text-[10px]">Banco</span>
+                <span class="text-text-main font-bold truncate">{{ selectedConsignation.bankName }}</span>
+                <span 
+                  [class.text-green-400]="isBankMatch(selectedConsignation)"
+                  [class.text-brand-error]="!isBankMatch(selectedConsignation)"
+                  class="font-bold text-right truncate">
+                  {{ selectedConsignation.ocr?.detectedBank || 'NO DETECTADO' }}
+                </span>
+              </div>
+
+              <!-- Referencia -->
+              <div class="grid grid-cols-3 gap-2 py-1 items-center border-t border-panel-border/30">
+                <span class="text-text-muted uppercase text-[10px]">Referencia</span>
+                <span class="text-text-main font-bold truncate">{{ selectedConsignation.referenceNumber }}</span>
+                <span 
+                  [class.text-green-400]="isReferenceMatch(selectedConsignation)"
+                  [class.text-brand-error]="!isReferenceMatch(selectedConsignation)"
+                  class="font-bold text-right truncate">
+                  {{ selectedConsignation.ocr?.detectedReference || 'NO DETECTADO' }}
+                </span>
+              </div>
+
+              <!-- Fecha -->
+              <div class="grid grid-cols-3 gap-2 py-1 items-center border-t border-panel-border/30">
+                <span class="text-text-muted uppercase text-[10px]">Fecha Depósito</span>
+                <span class="text-text-main font-bold">{{ selectedConsignation.consignationDate | date:'dd/MM/yyyy' }}</span>
+                <span 
+                  [class.text-green-400]="isDateMatch(selectedConsignation)"
+                  [class.text-brand-error]="!isDateMatch(selectedConsignation)"
+                  class="font-bold text-right">
+                  {{ (selectedConsignation.ocr?.detectedDate | date:'dd/MM/yyyy') || 'NO DETECTADO' }}
+                </span>
+              </div>
+
+              <!-- Monto -->
+              <div class="grid grid-cols-3 gap-2 py-1 items-center border-t border-panel-border/30">
+                <span class="text-text-muted uppercase text-[10px]">Monto</span>
+                <span class="text-text-main font-bold">${{ selectedConsignation.declaredAmount | number }}</span>
+                <span 
+                  [class.text-green-400]="selectedConsignation.declaredAmount === selectedConsignation.detectedAmount"
+                  [class.text-brand-error]="selectedConsignation.declaredAmount !== selectedConsignation.detectedAmount"
+                  class="font-bold text-right">
+                  ${{ (selectedConsignation.detectedAmount | number) || '0' }}
+                </span>
+              </div>
+            </div>
+
             <div *ngIf="selectedConsignation.notes" class="border-b border-panel-border pb-3">
               <span class="text-[10px] font-mono text-text-muted block uppercase">Notas de Conciliación (Cajero)</span>
               <span class="text-xs font-mono italic text-text-main">"{{ selectedConsignation.notes }}"</span>
@@ -180,6 +297,55 @@
 
 <!-- TAB 2: REPORTS & DASHBOARD -->
 <div *ngIf="currentTab === 'reports'" class="space-y-6 animate-fade-in">
+  
+  <!-- Filters Card -->
+  <div class="precision-panel p-4 bg-panel-bg border border-panel-border space-y-4">
+    <div class="flex items-center justify-between border-b border-panel-border/30 pb-2">
+      <span class="text-xs font-mono font-bold uppercase tracking-wider text-brand-primary">
+        [ 🔍 Filtros de Búsqueda y Análisis ]
+      </span>
+      <button 
+        (click)="resetFilters()"
+        class="text-[10px] font-mono text-text-muted hover:text-brand-error uppercase tracking-wider flex items-center space-x-1 focus:outline-none bg-transparent border-0 cursor-pointer">
+        <i class="pi pi-refresh text-[9px]"></i>
+        <span>Limpiar Filtros</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Filtro por Tienda/Punto de Venta -->
+      <div>
+        <label class="block text-[9px] uppercase text-text-muted mb-1 font-mono">Punto de Venta</label>
+        <select 
+          [(ngModel)]="filterStoreId"
+          (change)="applyFilters()"
+          class="w-full bg-app-bg border border-panel-border p-2 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary">
+          <option [value]="null">Todos los Puntos de Venta</option>
+          <option *ngFor="let st of availableStores" [value]="st.id">{{ st.name }}</option>
+        </select>
+      </div>
+
+      <!-- Fecha Inicio -->
+      <div>
+        <label class="block text-[9px] uppercase text-text-muted mb-1 font-mono">Fecha Desde</label>
+        <input 
+          type="date" 
+          [(ngModel)]="filterStartDate"
+          (change)="applyFilters()"
+          class="w-full bg-app-bg border border-panel-border p-1.5 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+      </div>
+
+      <!-- Fecha Fin -->
+      <div>
+        <label class="block text-[9px] uppercase text-text-muted mb-1 font-mono">Fecha Hasta</label>
+        <input 
+          type="date" 
+          [(ngModel)]="filterEndDate"
+          (change)="applyFilters()"
+          class="w-full bg-app-bg border border-panel-border p-1.5 text-xs font-mono text-text-main focus:outline-none focus:border-brand-primary" />
+      </div>
+    </div>
+  </div>
   
   <!-- KPI Grid -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -299,6 +465,20 @@
             title="Discrepancias">
             {{ stats.discrepancyPercent }}%
           </div>
+          <div 
+            *ngIf="stats.illegibleCount > 0" 
+            [style.width.%]="stats.illegiblePercent" 
+            class="bg-indigo-500 flex items-center justify-center transition-all shadow-inner font-bold"
+            title="Lectura Ilegible">
+            {{ stats.illegiblePercent }}%
+          </div>
+          <div 
+            *ngIf="stats.rejectedCount > 0" 
+            [style.width.%]="stats.rejectedPercent" 
+            class="bg-rose-600 flex items-center justify-center transition-all shadow-inner font-bold"
+            title="Rechazadas">
+            {{ stats.rejectedPercent }}%
+          </div>
         </div>
 
         <div class="space-y-2 pt-2 border-t border-panel-border/30">
@@ -324,6 +504,22 @@
               <span class="text-text-muted">Discrepancias</span>
             </span>
             <span class="text-text-main font-bold">{{ stats.discrepancyCount }}</span>
+          </div>
+
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 bg-indigo-500 rounded-full inline-block"></span>
+              <span class="text-text-muted">Lectura Ilegible</span>
+            </span>
+            <span class="text-text-main font-bold">{{ stats.illegibleCount }}</span>
+          </div>
+
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 bg-rose-600 rounded-full inline-block"></span>
+              <span class="text-text-muted">Rechazadas</span>
+            </span>
+            <span class="text-text-main font-bold">{{ stats.rejectedCount }}</span>
           </div>
           
           <div class="flex justify-between items-center text-xs font-mono border-t border-panel-border/30 pt-2 font-bold">
@@ -351,11 +547,12 @@
             <th class="pb-3 pr-2 text-right">Monto Declarado</th>
             <th class="pb-3 pr-2 text-right">Monto OCR</th>
             <th class="pb-3 pr-2 text-center">Referencia</th>
+            <th class="pb-3 pr-2 text-center">Gestor</th>
             <th class="pb-3 text-center">Estado</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let c of allConsignations" class="border-b border-panel-border/30 hover:bg-panel-bg/25 transition">
+          <tr *ngFor="let c of filteredConsignations" class="border-b border-panel-border/30 hover:bg-panel-bg/25 transition">
             <td class="py-3 font-bold text-text-main">#{{ c.id }}</td>
             <td class="py-3 text-text-muted">{{ c.consignationDate | date:'dd/MM/yyyy' }}</td>
             <td class="py-3 text-text-main">{{ c.storeName }}</td>
@@ -363,20 +560,25 @@
             <td class="py-3 text-right font-bold text-text-main">${{ c.declaredAmount | number }}</td>
             <td class="py-3 text-right font-bold text-cyan-400">${{ c.detectedAmount | number }}</td>
             <td class="py-3 text-center text-text-muted">{{ c.referenceNumber }}</td>
+            <td class="py-3 text-center text-text-muted">
+              {{ c.validatedByName ? c.validatedByName : (c.statusId === 2 ? 'Sistema (Automático)' : '-') }}
+            </td>
             <td class="py-3 text-center">
               <span 
                 [ngClass]="{
                   'bg-green-500/10 text-green-400 border-green-500/30': c.statusName === 'Validada',
                   'bg-amber-500/10 text-amber-400 border-amber-500/30': c.statusName === 'Pendiente',
-                  'bg-rose-500/10 text-rose-400 border-rose-500/30': c.statusName === 'Discrepancia'
+                  'bg-rose-500/10 text-rose-400 border-rose-500/30': c.statusName === 'Discrepancia',
+                  'bg-indigo-500/10 text-indigo-400 border-indigo-500/30': c.statusName === 'Lectura Ilegible',
+                  'bg-rose-600/10 text-rose-500 border-rose-600/30': c.statusName === 'Rechazada'
                 }"
                 class="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border">
                 {{ c.statusName }}
               </span>
             </td>
           </tr>
-          <tr *ngIf="allConsignations.length === 0">
-            <td colspan="8" class="text-center py-6 text-text-muted">
+          <tr *ngIf="filteredConsignations.length === 0">
+            <td colspan="9" class="text-center py-6 text-text-muted">
               No hay registros en el historial.
             </td>
           </tr>

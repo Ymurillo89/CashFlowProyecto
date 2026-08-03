@@ -19,8 +19,9 @@ namespace AngularApp1.Server.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<GetConsignation>> GetConsignationsByStatusAsync(short statusId)
+        public async Task<IEnumerable<GetConsignation>> GetConsignationsByStatusAsync(short statusId, long? userId = null, string? roleName = null)
         {
+            var isAdmin = roleName == "Administrador";
             var query = @"
                 SELECT 
                     c.Id, c.EmpresaId AS CompanyId, comp.Nombre AS CompanyName, c.PuntoVentaId AS StoreId,
@@ -44,6 +45,9 @@ namespace AngularApp1.Server.Repositories
                 LEFT JOIN Flow_tblArchivosConsignacion f ON c.Id = f.ConsignacionId
                 LEFT JOIN Flow_tblResultadosOcr o ON c.Id = o.ConsignacionId
                 WHERE c.EstadoId = @StatusId
+                  AND (@IsAdmin = TRUE OR c.PuntoVentaId IN (
+                      SELECT PuntoVentaId FROM Flow_tblUsuarioPuntosVenta WHERE UsuarioId = @UserId
+                  ))
                 ORDER BY c.FechaCreacion DESC";
 
             using (var connection = _context.CreateConnection())
@@ -63,7 +67,7 @@ namespace AngularApp1.Server.Repositories
                         currentConsignation.Ocr = ocr;
                         return currentConsignation;
                     },
-                    new { StatusId = statusId },
+                    new { StatusId = statusId, UserId = userId, IsAdmin = isAdmin },
                     splitOn: "Id"
                 );
 
@@ -71,8 +75,9 @@ namespace AngularApp1.Server.Repositories
             }
         }
 
-        public async Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync()
+        public async Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync(long? userId = null, string? roleName = null)
         {
+            var isAdmin = roleName == "Administrador";
             var query = @"
                 SELECT 
                     c.Id, c.EmpresaId AS CompanyId, comp.Nombre AS CompanyName, c.PuntoVentaId AS StoreId,
@@ -95,6 +100,9 @@ namespace AngularApp1.Server.Repositories
                 LEFT JOIN Flow_tblUsuarios u2 ON c.ValidadoPor = u2.Id
                 LEFT JOIN Flow_tblArchivosConsignacion f ON c.Id = f.ConsignacionId
                 LEFT JOIN Flow_tblResultadosOcr o ON c.Id = o.ConsignacionId
+                WHERE (@IsAdmin = TRUE OR c.PuntoVentaId IN (
+                    SELECT PuntoVentaId FROM Flow_tblUsuarioPuntosVenta WHERE UsuarioId = @UserId
+                ))
                 ORDER BY c.FechaCreacion DESC";
 
             using (var connection = _context.CreateConnection())
@@ -114,6 +122,7 @@ namespace AngularApp1.Server.Repositories
                         currentConsignation.Ocr = ocr;
                         return currentConsignation;
                     },
+                    new { UserId = userId, IsAdmin = isAdmin },
                     splitOn: "Id"
                 );
 
@@ -186,10 +195,10 @@ namespace AngularApp1.Server.Repositories
                         var insertConsignation = @"
                             INSERT INTO Flow_tblConsignaciones 
                             (EmpresaId, PuntoVentaId, BancoId, EstadoId, NumeroReferencia, MontoDeclarado, MontoDetectado, 
-                             FechaConsignacion, HoraConsignacion, Observaciones, CreadoPor, FechaCreacion)
+                             FechaConsignacion, HoraConsignacion, Observaciones, CreadoPor, ValidadoPor, FechaValidacion, FechaCreacion)
                             VALUES 
                             (@CompanyId, @StoreId, @BankId, @StatusId, @ReferenceNumber, @DeclaredAmount, @DetectedAmount,
-                             @ConsignationDate, @ConsignationTime, @Notes, @CreatedBy, @CreatedAt)
+                             @ConsignationDate, @ConsignationTime, @Notes, @CreatedBy, @ValidatedBy, @ValidationDate, @CreatedAt)
                             RETURNING Id;";
 
                         var id = await connection.ExecuteScalarAsync<long>(insertConsignation, c, transaction);

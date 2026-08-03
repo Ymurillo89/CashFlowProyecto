@@ -7,8 +7,8 @@ namespace AngularApp1.Server.Repositories
 {
     public interface IConsignationRepository
     {
-        Task<IEnumerable<GetConsignation>> GetConsignationsByStatusAsync(short statusId);
-        Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync();
+        Task<IEnumerable<GetConsignation>> GetConsignationsByStatusAsync(short statusId, long? userId = null, string? roleName = null);
+        Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync(long? userId = null, string? roleName = null);
         Task<GetConsignation> GetConsignationByIdAsync(long id);
         Task<long> CreateConsignationAsync(Consignation consignation, ConsignationFile file, OcrResult ocrResult);
         Task<bool> UpdateStatusAsync(long id, short statusId, long validatorId, string comments);

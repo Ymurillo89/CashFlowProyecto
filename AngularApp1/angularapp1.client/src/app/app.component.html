@@ -32,6 +32,7 @@
         </div>
 
         <a
+          *ngIf="isCashier"
           routerLink="/cashier"
           routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
           [routerLinkActiveOptions]="{ exact: true }"

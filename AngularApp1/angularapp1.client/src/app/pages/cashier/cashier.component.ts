@@ -31,6 +31,7 @@ export class CashierComponent implements OnInit {
   selectedBankId: number | null = null;
   declaredReference: string = '';
   declaredNotes: string = '';
+  declaredDate: string = '';
   uploadedFile: any = null;
   imagePreviewUrl: string | null = null;
   isScanning: boolean = false;
@@ -50,6 +51,7 @@ export class CashierComponent implements OnInit {
       this.selectedStoreId = user.storeId;
       this.storeName = user.storeName;
     }
+    this.declaredDate = new Date().toISOString().split('T')[0];
     this.loadBackendData();
     this.loadConsignations();
   }
@@ -115,7 +117,7 @@ export class CashierComponent implements OnInit {
     formData.append('bankId', this.selectedBankId.toString());
     formData.append('referenceNumber', this.declaredReference);
     formData.append('declaredAmount', this.declaredAmount.toString());
-    formData.append('consignationDate', new Date().toISOString());
+    formData.append('consignationDate', this.declaredDate);
     formData.append('consignationTime', '12:00:00'); // Dummy time
     formData.append('notes', this.declaredNotes);
     formData.append('file', this.uploadedFile);
@@ -166,6 +168,7 @@ export class CashierComponent implements OnInit {
     this.selectedBankId = null;
     this.declaredReference = '';
     this.declaredNotes = '';
+    this.declaredDate = new Date().toISOString().split('T')[0];
     if (this.imagePreviewUrl) URL.revokeObjectURL(this.imagePreviewUrl);
     this.imagePreviewUrl = null;
     this.uploadedFile = null;

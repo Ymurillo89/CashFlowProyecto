@@ -26,7 +26,11 @@ namespace AngularApp1.Server.Controllers
         {
             try
             {
-                var list = await _service.GetPendingConsignationsAsync();
+                var userIdStr = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                long? userId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : null;
+
+                var list = await _service.GetPendingConsignationsAsync(userId, role);
                 return Ok(list);
             }
             catch (Exception ex)
@@ -40,7 +44,11 @@ namespace AngularApp1.Server.Controllers
         {
             try
             {
-                var list = await _service.GetAllConsignationsAsync();
+                var userIdStr = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                long? userId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : null;
+
+                var list = await _service.GetAllConsignationsAsync(userId, role);
                 return Ok(list);
             }
             catch (Exception ex)
@@ -69,7 +77,10 @@ namespace AngularApp1.Server.Controllers
         {
             try
             {
-                var id = await _service.SubmitConsignationAsync(request, file);
+                var userIdStr = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                long createdBy = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : 1;
+
+                var id = await _service.SubmitConsignationAsync(request, file, createdBy);
                 return Ok(new { id });
             }
             catch (Exception ex)
@@ -83,7 +94,10 @@ namespace AngularApp1.Server.Controllers
         {
             try
             {
-                var result = await _service.AuditConsignationAsync(id, request);
+                var userIdStr = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                long validatorId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : 1;
+
+                var result = await _service.AuditConsignationAsync(id, request, validatorId);
                 if (!result) return NotFound();
                 return Ok();
             }

@@ -24,14 +24,22 @@ namespace AngularApp1.Server.Services
             _env = env;
         }
 
-        public async Task<IEnumerable<GetConsignation>> GetPendingConsignationsAsync()
+        public async Task<IEnumerable<GetConsignation>> GetPendingConsignationsAsync(long? userId = null, string? roleName = null)
         {
-            return await _repository.GetConsignationsByStatusAsync(1); // 1 = Pendiente
+            // Pending audit queue now aggregates both Discrepancies (3) and Illegibles (4)
+            var discrepancies = await _repository.GetConsignationsByStatusAsync(3, userId, roleName);
+            var illegibles = await _repository.GetConsignationsByStatusAsync(4, userId, roleName);
+            
+            var list = new List<GetConsignation>();
+            list.AddRange(discrepancies);
+            list.AddRange(illegibles);
+            
+            return list.OrderByDescending(c => c.CreatedAt);
         }
 
-        public async Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync()
+        public async Task<IEnumerable<GetConsignation>> GetAllConsignationsAsync(long? userId = null, string? roleName = null)
         {
-            return await _repository.GetAllConsignationsAsync();
+            return await _repository.GetAllConsignationsAsync(userId, roleName);
         }
 
         public async Task<GetConsignation> GetConsignationByIdAsync(long id)
@@ -39,7 +47,7 @@ namespace AngularApp1.Server.Services
             return await _repository.GetConsignationByIdAsync(id);
         }
 
-        public async Task<long> SubmitConsignationAsync(PostConsignation request, IFormFile file)
+        public async Task<long> SubmitConsignationAsync(PostConsignation request, IFormFile file, long createdBy)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("El archivo es obligatorio");
@@ -58,20 +66,45 @@ namespace AngularApp1.Server.Services
 
             var ocrResult = await _ocrService.ProcessImageAsync(filePath, request.ReferenceNumber, request.DeclaredAmount);
 
+            // Calculate initial status based on OCR matches
+            short initialStatusId = 1; // Default fallback
+            
+            bool isAmountMatch = ocrResult.DetectedAmount == request.DeclaredAmount;
+            bool isRefMatch = !string.IsNullOrEmpty(ocrResult.DetectedReference) && 
+                              ocrResult.DetectedReference.Trim() == request.ReferenceNumber.Trim();
+                              
+            if (ocrResult.Confidence <= 0.0m || ocrResult.DetectedBank == "Error de Red/API" || ocrResult.DetectedAmount == null)
+            {
+                // OCR read failed (Lectura Ilegible)
+                initialStatusId = 4;
+            }
+            else if (isAmountMatch && isRefMatch)
+            {
+                // Perfect match! Auto-validate!
+                initialStatusId = 2; // Validada
+            }
+            else
+            {
+                // Discrepancy
+                initialStatusId = 3; // Discrepancia
+            }
+
             // Fetch companyId from store? Hardcoded to 1 for now
             var consignation = new Consignation
             {
                 CompanyId = 1,
                 StoreId = request.StoreId,
                 BankId = request.BankId,
-                StatusId = 1, // Pendiente
+                StatusId = initialStatusId,
                 ReferenceNumber = request.ReferenceNumber,
                 DeclaredAmount = request.DeclaredAmount,
                 DetectedAmount = ocrResult.DetectedAmount,
                 ConsignationDate = request.ConsignationDate,
                 ConsignationTime = string.IsNullOrEmpty(request.ConsignationTime) ? null : TimeSpan.Parse(request.ConsignationTime),
                 Notes = request.Notes,
-                CreatedBy = 1, 
+                CreatedBy = createdBy, 
+                ValidatedBy = null, // Auto-validated has no validator user ID
+                ValidationDate = initialStatusId == 2 ? DateTime.Now : null,
                 CreatedAt = DateTime.Now
             };
 
@@ -87,9 +120,8 @@ namespace AngularApp1.Server.Services
             return await _repository.CreateConsignationAsync(consignation, consignationFile, ocrResult);
         }
 
-        public async Task<bool> AuditConsignationAsync(long id, AuditConsignation request)
+        public async Task<bool> AuditConsignationAsync(long id, AuditConsignation request, long validatorId)
         {
-            long validatorId = 1; 
             return await _repository.UpdateStatusAsync(id, request.StatusId, validatorId, request.Comments);
         }
     }

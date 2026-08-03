@@ -14,6 +14,7 @@ namespace AngularApp1.Server.Models.ViewModels
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public System.Collections.Generic.List<long> AssignedStoreIds { get; set; } = new();
         public DateTime CreatedAt { get; set; }
     }
 }

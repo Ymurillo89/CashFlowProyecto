@@ -40,7 +40,18 @@ namespace AngularApp1.Server.Repositories
                 ORDER BY u.Id DESC";
 
             using var connection = _context.CreateConnection();
-            return await connection.QueryAsync<GetUser>(query);
+            var users = (await connection.QueryAsync<GetUser>(query)).ToList();
+
+            var associations = await connection.QueryAsync<(long UsuarioId, long PuntoVentaId)>(
+                "SELECT UsuarioId, PuntoVentaId FROM Flow_tblUsuarioPuntosVenta");
+            var lookup = associations.ToLookup(a => a.UsuarioId, a => a.PuntoVentaId);
+
+            foreach (var user in users)
+            {
+                user.AssignedStoreIds = lookup[user.Id].ToList();
+            }
+
+            return users;
         }
 
         public async Task<GetUser?> GetUserByIdAsync(long id)
@@ -65,7 +76,14 @@ namespace AngularApp1.Server.Repositories
                 WHERE u.Id = @Id";
 
             using var connection = _context.CreateConnection();
-            return await connection.QuerySingleOrDefaultAsync<GetUser>(query, new { Id = id });
+            var user = await connection.QuerySingleOrDefaultAsync<GetUser>(query, new { Id = id });
+            if (user != null)
+            {
+                var storeIds = await connection.QueryAsync<long>(
+                    "SELECT PuntoVentaId FROM Flow_tblUsuarioPuntosVenta WHERE UsuarioId = @Id", new { Id = user.Id });
+                user.AssignedStoreIds = storeIds.ToList();
+            }
+            return user;
         }
 
         public async Task<GetUser?> GetUserByEmailAsync(string email)
@@ -90,18 +108,28 @@ namespace AngularApp1.Server.Repositories
                 WHERE LOWER(u.Email) = LOWER(@Email)";
 
             using var connection = _context.CreateConnection();
-            return await connection.QuerySingleOrDefaultAsync<GetUser>(query, new { Email = email });
+            var user = await connection.QuerySingleOrDefaultAsync<GetUser>(query, new { Email = email });
+            if (user != null)
+            {
+                var storeIds = await connection.QueryAsync<long>(
+                    "SELECT PuntoVentaId FROM Flow_tblUsuarioPuntosVenta WHERE UsuarioId = @Id", new { Id = user.Id });
+                user.AssignedStoreIds = storeIds.ToList();
+            }
+            return user;
         }
 
         public async Task<Result> CreateUserAsync(PostUser model, string hashedPassword)
         {
             var query = @"
                 INSERT INTO Flow_tblUsuarios (EmpresaId, PuntoVentaId, RolId, NombreCompleto, Email, PasswordHash, Activo) 
-                VALUES (@CompanyId, @StoreId, @RoleId, @FullName, @Email, @PasswordHash, @IsActive)";
+                VALUES (@CompanyId, @StoreId, @RoleId, @FullName, @Email, @PasswordHash, @IsActive)
+                RETURNING Id;";
+
+            var primaryStoreId = model.AssignedStoreIds != null && model.AssignedStoreIds.Any() ? (long?)model.AssignedStoreIds.First() : model.StoreId;
 
             var parameters = new DynamicParameters();
             parameters.Add("CompanyId", model.CompanyId);
-            parameters.Add("StoreId", model.StoreId);
+            parameters.Add("StoreId", primaryStoreId);
             parameters.Add("RoleId", model.RoleId);
             parameters.Add("FullName", model.FullName);
             parameters.Add("Email", model.Email);
@@ -111,10 +139,19 @@ namespace AngularApp1.Server.Repositories
             try
             {
                 using var connection = _context.CreateConnection();
-                var rowsAffected = await connection.ExecuteAsync(query, parameters);
+                var newUserId = await connection.ExecuteScalarAsync<long>(query, parameters);
 
-                if (rowsAffected > 0)
+                if (newUserId > 0)
                 {
+                    if (model.AssignedStoreIds != null && model.AssignedStoreIds.Any())
+                    {
+                        foreach (var sId in model.AssignedStoreIds)
+                        {
+                            await connection.ExecuteAsync(
+                                "INSERT INTO Flow_tblUsuarioPuntosVenta (UsuarioId, PuntoVentaId) VALUES (@UserId, @StoreId) ON CONFLICT DO NOTHING",
+                                new { UserId = newUserId, StoreId = sId });
+                        }
+                    }
                     return new Result { Success = true, Message = "User created successfully" };
                 }
                 return new Result { Success = false, Message = "Could not create user" };
@@ -128,10 +165,12 @@ namespace AngularApp1.Server.Repositories
         public async Task<Result> UpdateUserAsync(long id, PostUser model, string? hashedPassword)
         {
             string query;
+            var primaryStoreId = model.AssignedStoreIds != null && model.AssignedStoreIds.Any() ? (long?)model.AssignedStoreIds.First() : model.StoreId;
+
             var parameters = new DynamicParameters();
             parameters.Add("Id", id);
             parameters.Add("CompanyId", model.CompanyId);
-            parameters.Add("StoreId", model.StoreId);
+            parameters.Add("StoreId", primaryStoreId);
             parameters.Add("RoleId", model.RoleId);
             parameters.Add("FullName", model.FullName);
             parameters.Add("Email", model.Email);
@@ -171,6 +210,17 @@ namespace AngularApp1.Server.Repositories
 
                 if (rowsAffected > 0)
                 {
+                    // Update store associations
+                    await connection.ExecuteAsync("DELETE FROM Flow_tblUsuarioPuntosVenta WHERE UsuarioId = @Id", new { Id = id });
+                    if (model.AssignedStoreIds != null && model.AssignedStoreIds.Any())
+                    {
+                        foreach (var sId in model.AssignedStoreIds)
+                        {
+                            await connection.ExecuteAsync(
+                                "INSERT INTO Flow_tblUsuarioPuntosVenta (UsuarioId, PuntoVentaId) VALUES (@UserId, @StoreId) ON CONFLICT DO NOTHING",
+                                new { UserId = id, StoreId = sId });
+                        }
+                    }
                     return new Result { Success = true, Message = "User updated successfully" };
                 }
                 return new Result { Success = false, Message = "User not found or no changes made" };
