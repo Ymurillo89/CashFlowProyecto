@@ -101,4 +101,10 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
 
+// Ensure database auto-migrations and seeds run immediately on startup
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<AngularApp1.Server.Data.DapperContext>();
+}
+
 app.Run();

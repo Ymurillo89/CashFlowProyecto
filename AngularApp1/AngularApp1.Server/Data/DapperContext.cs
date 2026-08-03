@@ -55,6 +55,51 @@ namespace AngularApp1.Server.Data
                 {
                     cmd.ExecuteNonQuery();
                 }
+
+                // Seed default Company and Admin User if they do not exist
+                long companyId = 0;
+                using (var cmd = new NpgsqlCommand("SELECT Id FROM Flow_tblEmpresas LIMIT 1", connection))
+                {
+                    var result = cmd.ExecuteScalar();
+                    if (result != null)
+                    {
+                        companyId = Convert.ToInt64(result);
+                    }
+                }
+
+                if (companyId == 0)
+                {
+                    // Create default company
+                    var insertCompanySql = @"
+                        INSERT INTO Flow_tblEmpresas (Nombre, Nit, Email, Telefono, Direccion, Activo)
+                        VALUES ('Letra Viva', '900.123.456-9', 'contacto@letraviva.com', '5550000', 'Dirección Principal Letra Viva', true)
+                        RETURNING Id;";
+                    using (var cmd = new NpgsqlCommand(insertCompanySql, connection))
+                    {
+                        companyId = Convert.ToInt64(cmd.ExecuteScalar());
+                    }
+                }
+
+                using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM Flow_tblUsuarios WHERE Email = 'murilloruiz91@gmail.com'", connection))
+                {
+                    var userExists = Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+                    if (!userExists)
+                    {
+                        var passwordHasher = new Microsoft.AspNetCore.Identity.PasswordHasher<object>();
+                        var hashedPassword = passwordHasher.HashPassword(new object(), "Admin123!");
+
+                        var insertUserSql = @"
+                            INSERT INTO Flow_tblUsuarios (EmpresaId, RolId, NombreCompleto, Email, PasswordHash, Activo)
+                            VALUES (@EmpresaId, 1, 'Administrador Letra Viva', 'murilloruiz91@gmail.com', @PasswordHash, true);";
+                        
+                        using (var cmdInsert = new NpgsqlCommand(insertUserSql, connection))
+                        {
+                            cmdInsert.Parameters.AddWithValue("EmpresaId", companyId);
+                            cmdInsert.Parameters.AddWithValue("PasswordHash", hashedPassword);
+                            cmdInsert.ExecuteNonQuery();
+                        }
+                    }
+                }
             }
             catch {}
         }
