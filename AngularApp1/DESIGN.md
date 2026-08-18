@@ -1,78 +1,44 @@
 ---
 name: CashFlow Control AI
-description: Centralized cash deposit verification and AI OCR validation.
+description: Centralized cash deposit verification and AI OCR validation based on the Exportacion design system.
 ---
 
-<!-- SEED: established with the user before implementation; re-run /impeccable document once there's code to capture the actual tokens and components. -->
-
-# Design System: CashFlow Control AI
+# Design System: CashFlow Control AI (Exportacion Aesthetic)
 
 ## Overview
 
-**Creative North Star: "High-Precision Optical Sorting Bench"**
+**Creative North Star: "The Port & Vessel Registry"**
 
-The application feels like a piece of clinical, industrial optical sorting equipment. It is structured, high-contrast, and built for exactness. When a cashier uploads a receipt, it behaves as a physical document sliding into a laser scanner; when a manager reviews discrepancies, the interface highlights mismatches using sharp, high-contrast targeting reticles (glassmorphism accents). It rejects the soft, friendly defaults of typical SaaS dashboards in favor of serious, trustworthy, and precise financial authority.
+The application feels like a modern logistics and maritime registry interface: clean, highly structured, and visually balanced. It maintains high data density while remaining readable, thanks to the use of clean typography (Inter & Outfit) and a clear color hierarchy. 
 
 **Key Characteristics:**
-- Clinical and structured.
-- High-contrast precision markers.
-- Laser-scanner interaction feel.
-- Complete financial transparency.
+- Clean layout with high readability.
+- Navy/Ocean identity for primary and navigation elements.
+- Soft corners (8px) and fine 1px borders instead of drop shadows.
+- Saturated state indicators (Emerald for matched, Amber for pending, Rose for discrepancies).
 
 ## Colors
 
-The palette strategy relies on a clean, industrial neutral background with sharp, saturated accent colors used specifically to highlight data states (validated vs. anomalous).
-
 ### Primary
-- **[to be resolved during implementation]**
+- **Deep Navy** (#0f172a): Main headers, sidebars, and primary navigation.
+- **Ocean Blue** (#0284c7): Interactive controls, active states, and buttons.
 
-### Secondary
-- **[to be resolved during implementation]**
+### State Colors
+- **Emerald Green** (#059669): Verified, matched, and success indicators.
+- **Amber Orange** (#d97706): In-transit, warnings, or pending items.
+- **Rose Red** (#e11d48): Errors, discrepancies, or disabled states.
 
 ### Neutral
-- **[to be resolved during implementation]**
-
-**The Precision State Rule.** Colors do not exist for decoration. A saturated color only appears on screen to indicate a verified state (e.g., successful OCR match) or an anomaly (e.g., amount mismatch).
+- **Global Background** (#f3f5f7): Soft gray to reduce eye strain.
+- **Pure White** (#ffffff): Cards, lists, tables, and modal backgrounds.
+- **Slate 200** (#e2e8f0): Thin borders, dividers, and disabled elements.
 
 ## Typography
 
-**Display Font:** [to be resolved during implementation]
-**Body Font:** [to be resolved during implementation]
-**Label/Mono Font:** [to be resolved during implementation]
-
-**Character:** Highly legible, monospaced or technical sans-serif typography that feels like aerospace or banking spec sheets.
-
-### Hierarchy
-- **Display**: [to be resolved during implementation]
-- **Headline**: [to be resolved during implementation]
-- **Title**: [to be resolved during implementation]
-- **Body**: [to be resolved during implementation]
-- **Label**: [to be resolved during implementation]
-
-**The Data-First Rule.** All financial figures use tabular (monospaced) lining figures so columns align perfectly and discrepancies stand out visually.
+**Display Font:** Outfit, sans-serif (for headers and titles)
+**Body Font:** Inter, sans-serif (for text and forms)
+**Label/Mono Font:** JetBrains Mono, monospace (for numeric values, currency, and IDs)
 
 ## Layout
 
-A rigid, paneled spatial grammar. Content is organized in distinct, bolted-down sections similar to a laboratory dashboard. The screen does not use floating cards; instead, it uses a full-bleed grid where panels touch or have hairline borders to maximize data density and precision. Responsive behavior collapses horizontal panels into vertically stacked modules without losing the hairline structure.
-
-## Elevation & Depth
-
-Surfaces are strictly flat. There are no ambient drop shadows. Depth is conveyed only through physical layering (e.g., a modal sliding in like a glass inspection plate) or through high-contrast borders and dimming of inactive panels.
-
-**The Glass Plate Rule.** Active inspection states (like reviewing a scanned receipt) sit above the flat interface as an un-shadowed, semi-transparent plate (glassmorphism) with sharp borders, mimicking a physical slide under a microscope.
-
-## Shapes
-
-Corners are razor-sharp or minimally rounded (e.g., 2px radius). Buttons, inputs, and panels share a hard, mechanical form language. Borders are crisp hairlines (1px), emphasizing the grid-like nature of a technical instrument.
-
-## Do's and Don'ts
-
-### Do:
-- **Do** use strict alignment for all numerical data.
-- **Do** treat the receipt upload and scanning interaction as a central, mechanical event.
-- **Do** use a dark or muted industrial background for the dashboard frame to let the data panels stand out.
-
-### Don'ts:
-- **Don't** use soft, large border radii on cards or buttons.
-- **Don't** use ambient drop shadows to create depth.
-- **Don't** clutter the screen with decorative illustrations or colors; keep the focus on the data and the scanner.
+A precise, paneled spatial grid. Content is organized in white cards with fine borders (`border: 1px solid #e2e8f0`) and soft rounded corners. Heavy decorative elements and gradients are avoided to maintain professional clarity.

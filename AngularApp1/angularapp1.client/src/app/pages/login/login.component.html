@@ -1,125 +1,116 @@
-<div class="min-h-screen w-screen bg-app-bg flex items-center justify-center relative overflow-hidden">
-  
-  <!-- Ambient Background Grid -->
-  <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(var(--color-panel-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-panel-border) 1px, transparent 1px); background-size: 40px 40px;"></div>
+<!-- Login: fondo Slate-50, tarjeta centrada con bordes finos al estilo Exportacion -->
+<div style="min-height:100vh; width:100vw; background:#f8fafc; display:flex; align-items:center; justify-content:center; padding:24px;">
 
-  <!-- Glow accent -->
-  <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-10 blur-3xl" style="background: radial-gradient(circle, var(--color-brand-primary), transparent);"></div>
-
-  <!-- Login Panel -->
-  <div class="relative z-10 w-full max-w-sm mx-4">
-
-    <!-- Session Expired Banner -->
-    <div *ngIf="sessionExpired" class="mb-4 border border-amber-500/50 bg-amber-500/10 text-amber-400 font-mono text-xs px-4 py-2 flex items-center space-x-2">
-      <i class="pi pi-exclamation-triangle"></i>
-      <span>SESIÓN EXPIRADA — Inicie sesión de nuevo.</span>
-    </div>
-
-    <!-- Card -->
-    <div class="border border-panel-border bg-panel-bg relative">
-      <!-- Corner reticles -->
-      <div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-brand-primary -translate-x-px -translate-y-px"></div>
-      <div class="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-brand-primary translate-x-px -translate-y-px"></div>
-      <div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-brand-primary -translate-x-px translate-y-px"></div>
-      <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-brand-primary translate-x-px translate-y-px"></div>
-
-      <!-- Header -->
-      <div class="p-6 border-b border-panel-border">
-        <div class="flex items-center space-x-3 mb-1">
-          <div class="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></div>
-          <span class="font-mono text-xs tracking-widest font-bold uppercase text-brand-primary">CashFlow Control AI</span>
-        </div>
-        <h1 class="text-lg font-bold text-text-main mt-2">Acceso al Sistema</h1>
-        <p class="text-[11px] font-mono text-text-muted mt-1 uppercase tracking-wider">Autenticación Segura · JWT</p>
-      </div>
-
-      <!-- Form -->
-      <div class="p-6">
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5" id="login-form">
-
-          <!-- Email -->
-          <div>
-            <label class="block text-[10px] font-mono uppercase tracking-widest text-text-muted mb-1">
-              Correo Electrónico
-            </label>
-            <div class="relative">
-              <input
-                id="login-email"
-                type="email"
-                formControlName="email"
-                placeholder="usuario@empresa.com"
-                autocomplete="email"
-                class="w-full bg-app-bg border px-3 py-2 text-sm font-mono text-text-main placeholder-text-muted/40 focus:outline-none transition"
-                [class.border-brand-error]="emailControl?.invalid && emailControl?.touched"
-                [class.border-panel-border]="!(emailControl?.invalid && emailControl?.touched)"
-                [class.focus:border-brand-primary]="true">
-              <i class="pi pi-envelope absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs"></i>
-            </div>
-            <p *ngIf="emailControl?.invalid && emailControl?.touched" class="text-[10px] text-brand-error font-mono mt-1">
-              <span *ngIf="emailControl?.errors?.['required']">El correo es obligatorio.</span>
-              <span *ngIf="emailControl?.errors?.['email']">Ingrese un correo válido.</span>
-            </p>
-          </div>
-
-          <!-- Password -->
-          <div>
-            <label class="block text-[10px] font-mono uppercase tracking-widest text-text-muted mb-1">
-              Contraseña
-            </label>
-            <div class="relative">
-              <input
-                id="login-password"
-                [type]="showPassword ? 'text' : 'password'"
-                formControlName="password"
-                placeholder="••••••••"
-                autocomplete="current-password"
-                class="w-full bg-app-bg border px-3 py-2 pr-10 text-sm font-mono text-text-main placeholder-text-muted/40 focus:outline-none transition"
-                [class.border-brand-error]="passwordControl?.invalid && passwordControl?.touched"
-                [class.border-panel-border]="!(passwordControl?.invalid && passwordControl?.touched)">
-              <button
-                type="button"
-                (click)="togglePassword()"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition">
-                <i [class]="showPassword ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'"></i>
-              </button>
-            </div>
-            <p *ngIf="passwordControl?.invalid && passwordControl?.touched" class="text-[10px] text-brand-error font-mono mt-1">
-              La contraseña es obligatoria.
-            </p>
-          </div>
-
-          <!-- Submit -->
-          <button
-            id="login-submit"
-            type="submit"
-            [disabled]="isLoading"
-            class="w-full py-2.5 font-mono text-xs uppercase tracking-widest transition relative overflow-hidden"
-            [class.opacity-60]="isLoading"
-            [class.cursor-not-allowed]="isLoading"
-            style="background: var(--color-brand-primary); color: #000; font-weight: 700;">
-
-            <span *ngIf="!isLoading" class="flex items-center justify-center space-x-2">
-              <i class="pi pi-lock text-xs"></i>
-              <span>Iniciar Sesión</span>
-            </span>
-            <span *ngIf="isLoading" class="flex items-center justify-center space-x-2">
-              <i class="pi pi-spin pi-spinner text-xs"></i>
-              <span>Autenticando...</span>
-            </span>
-          </button>
-
-        </form>
-      </div>
-
-      <!-- Footer -->
-      <div class="px-6 pb-4 text-[9px] font-mono text-text-muted/50 text-center uppercase tracking-widest">
-        Sesión segura · Token JWT · Expiración 8h
-      </div>
-    </div>
-
-    <!-- System info -->
-    <div class="mt-3 text-[9px] font-mono text-text-muted/40 text-center uppercase tracking-widest">
-      NÚCLEO: .NET 8 + PostgreSQL · CLIENTE: Angular
-    </div>
+  <!-- Session Expired Banner -->
+  <div *ngIf="sessionExpired"
+    style="position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:100; background:#fef3c7; border:1px solid #f59e0b; border-radius:8px; padding:10px 20px; display:flex; align-items:center; gap:8px; font-family:'Lexend',sans-serif; font-size:12px; font-weight:500; color:#92400e;">
+    <i class="pi pi-exclamation-triangle" style="font-size:13px;"></i>
+    Sesión expirada — por favor ingrese de nuevo.
   </div>
+
+  <!-- Login Card -->
+  <div style="width:100%; max-width:380px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(15,23,42,0.07);">
+
+    <!-- Card Header -->
+    <div style="padding:28px 28px 20px; border-bottom:1px solid #e2e8f0; background:#f8fafc;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <div style="width:7px; height:7px; border-radius:50%; background:#0284c7; animation:pulse 2s ease-in-out infinite;"></div>
+        <span style="font-family:'Lexend',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#0284c7;">CashFlow · Control</span>
+      </div>
+      <h1 style="font-family:'Lexend',sans-serif; font-size:22px; font-weight:700; color:#0f172a; margin:0 0 4px;">Acceso al Sistema</h1>
+      <p style="font-family:'Lexend',sans-serif; font-size:12px; color:#64748b; margin:0; font-weight:400;">Ingrese sus credenciales para continuar</p>
+    </div>
+
+    <!-- Form -->
+    <div style="padding:28px;">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" id="login-form" style="display:flex; flex-direction:column; gap:18px;">
+
+        <!-- Email -->
+        <div>
+          <label style="display:block; font-family:'Lexend',sans-serif; font-size:11px; font-weight:600; color:#475569; margin-bottom:6px; letter-spacing:0.02em;">
+            Correo Electrónico
+          </label>
+          <div style="position:relative;">
+            <input
+              id="login-email"
+              type="email"
+              formControlName="email"
+              placeholder="usuario@empresa.com"
+              autocomplete="email"
+              class="cf-input"
+              style="width:100%; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 36px 10px 12px; font-family:'Lexend',sans-serif; font-size:13px; color:#0f172a; outline:none; box-sizing:border-box; transition:border-color 150ms ease, box-shadow 150ms ease;"
+              [style.borderColor]="(emailControl?.invalid && emailControl?.touched) ? '#e11d48' : '#e2e8f0'">
+            <i class="pi pi-envelope" style="position:absolute; right:11px; top:50%; transform:translateY(-50%); font-size:12px; color:#94a3b8;"></i>
+          </div>
+          <p *ngIf="emailControl?.invalid && emailControl?.touched" style="margin:4px 0 0; font-family:'Lexend',sans-serif; font-size:11px; color:#e11d48;">
+            <span *ngIf="emailControl?.errors?.['required']">El correo es obligatorio.</span>
+            <span *ngIf="emailControl?.errors?.['email']">Ingrese un correo válido.</span>
+          </p>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label style="display:block; font-family:'Lexend',sans-serif; font-size:11px; font-weight:600; color:#475569; margin-bottom:6px; letter-spacing:0.02em;">
+            Contraseña
+          </label>
+          <div style="position:relative;">
+            <input
+              id="login-password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              class="cf-input"
+              style="width:100%; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 36px 10px 12px; font-family:'Lexend',sans-serif; font-size:13px; color:#0f172a; outline:none; box-sizing:border-box; transition:border-color 150ms ease, box-shadow 150ms ease;"
+              [style.borderColor]="(passwordControl?.invalid && passwordControl?.touched) ? '#e11d48' : '#e2e8f0'">
+            <button
+              type="button"
+              (click)="togglePassword()"
+              style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#94a3b8; padding:0; display:flex; align-items:center;">
+              <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'" style="font-size:13px;"></i>
+            </button>
+          </div>
+          <p *ngIf="passwordControl?.invalid && passwordControl?.touched" style="margin:4px 0 0; font-family:'Lexend',sans-serif; font-size:11px; color:#e11d48;">
+            La contraseña es obligatoria.
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button
+          id="login-submit"
+          type="submit"
+          [disabled]="isLoading"
+          style="width:100%; padding:12px; border:none; border-radius:8px; background:#0284c7; color:#ffffff; font-family:'Lexend',sans-serif; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:background 150ms ease, opacity 150ms ease; margin-top:4px;"
+          [style.opacity]="isLoading ? '0.65' : '1'"
+          [style.cursor]="isLoading ? 'not-allowed' : 'pointer'"
+          onmouseover="if(!this.disabled) this.style.background='#0369a1'"
+          onmouseout="this.style.background='#0284c7'">
+          <i *ngIf="!isLoading" class="pi pi-lock" style="font-size:13px;"></i>
+          <i *ngIf="isLoading" class="pi pi-spin pi-spinner" style="font-size:13px;"></i>
+          <span>{{ isLoading ? 'Autenticando...' : 'Iniciar Sesión' }}</span>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Card Footer -->
+    <div style="padding:12px 28px 16px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+      <p style="margin:0; font-family:'JetBrains Mono',monospace; font-size:10px; color:#94a3b8; text-align:center; letter-spacing:0.06em; text-transform:uppercase;">
+        Sesión segura · JWT · Expiración 8h
+      </p>
+    </div>
+
+  </div>
+
 </div>
+
+<style>
+  .cf-input:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12) !important;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+</style>

@@ -1,92 +1,91 @@
 <p-toast></p-toast>
 
-<!-- ── LOGIN: Full screen, no layout ──────────────────────────────────────── -->
+<!-- ── LOGIN: Full screen, no layout ──────────────────────────────── -->
 <ng-container *ngIf="!isLoggedIn">
   <router-outlet></router-outlet>
 </ng-container>
 
-<!-- ── MAIN APP: Sidebar + Content ────────────────────────────────────────── -->
-<div *ngIf="isLoggedIn" class="flex h-screen w-screen overflow-hidden bg-app-bg text-text-main">
+<!-- ── MAIN APP: Sidebar + Content ────────────────────────────────── -->
+<div *ngIf="isLoggedIn" style="display:flex; height:100vh; width:100vw; overflow:hidden; background:#f8fafc;">
 
-  <!-- 1. Sidebar -->
-  <aside class="w-64 border-r border-panel-border bg-panel-bg flex flex-col justify-between">
+  <!-- 1. Sidebar (Deep Navy) -->
+  <aside style="width:240px; min-width:240px; background:#0f172a; display:flex; flex-direction:column; justify-content:space-between; border-right:1px solid rgba(255,255,255,0.06);">
     <div>
 
       <!-- Brand -->
-      <div class="p-6 border-b border-panel-border">
-        <div class="flex items-center space-x-3">
-          <div class="w-3 h-3 bg-brand-primary rounded-full animate-pulse"></div>
-          <span class="font-mono text-sm tracking-widest font-bold uppercase">CashFlow AI</span>
+      <div style="padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <div style="width:8px; height:8px; border-radius:50%; background:#0284c7; box-shadow:0 0 8px rgba(2,132,199,0.6); animation:pulse 2s ease-in-out infinite;"></div>
+          <span style="font-family:'Lexend',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#f1f5f9;">CashFlow</span>
         </div>
-        <div class="text-[10px] text-text-muted mt-2 uppercase font-mono tracking-wider">
-          Estado del Sistema: En Línea
+        <div style="font-size:10px; font-family:'JetBrains Mono',monospace; color:#475569; text-transform:uppercase; letter-spacing:0.12em;">
+          Control de Consignaciones
         </div>
       </div>
 
       <!-- Navigation -->
-      <nav class="p-4 space-y-2">
+      <nav style="padding:16px 12px;">
 
-        <!-- Operaciones (visible para todos los roles) -->
-        <div class="text-[10px] text-text-muted px-3 mb-2 uppercase font-mono tracking-widest">
+        <!-- Operaciones -->
+        <div style="font-size:9px; font-family:'Lexend',sans-serif; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#334155; padding:0 8px; margin-bottom:6px;">
           Operaciones
         </div>
 
         <a
           *ngIf="isCashier"
           routerLink="/cashier"
-          routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+          routerLinkActive="nav-active"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
-          <i class="pi pi-upload text-xs"></i>
+          style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:400; color:#94a3b8; text-decoration:none; transition:background 150ms ease, color 150ms ease; cursor:pointer; margin-bottom:2px;">
+          <i class="pi pi-upload" style="font-size:13px; width:16px; text-align:center;"></i>
           <span>Panel de Cajero</span>
         </a>
 
-        <!-- Gerente: visible para Gerente Sucursal y Administrador -->
         <a
           *ngIf="isManagerOrAbove"
           routerLink="/manager"
-          routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+          routerLinkActive="nav-active"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
-          <i class="pi pi-shield text-xs"></i>
+          style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:400; color:#94a3b8; text-decoration:none; transition:background 150ms ease, color 150ms ease; cursor:pointer; margin-bottom:2px;">
+          <i class="pi pi-shield" style="font-size:13px; width:16px; text-align:center;"></i>
           <span>Escritorio de Gerente</span>
         </a>
 
-        <!-- Admin section: visible solo para Administrador -->
+        <!-- Admin section -->
         <ng-container *ngIf="isAdmin">
-          <div class="text-[10px] text-text-muted px-3 pt-4 mb-2 uppercase font-mono tracking-widest">
+          <div style="font-size:9px; font-family:'Lexend',sans-serif; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#334155; padding:0 8px; margin-top:20px; margin-bottom:6px;">
             Administración
           </div>
           <a
             routerLink="/admin/companies"
-            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            routerLinkActive="nav-active"
             [routerLinkActiveOptions]="{ exact: true }"
-            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
-            <i class="pi pi-building text-xs"></i>
+            style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:400; color:#94a3b8; text-decoration:none; transition:background 150ms ease, color 150ms ease; cursor:pointer; margin-bottom:2px;">
+            <i class="pi pi-building" style="font-size:13px; width:16px; text-align:center;"></i>
             <span>Empresas</span>
           </a>
           <a
             routerLink="/admin/stores"
-            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            routerLinkActive="nav-active"
             [routerLinkActiveOptions]="{ exact: true }"
-            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
-            <i class="pi pi-map-marker text-xs"></i>
+            style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:400; color:#94a3b8; text-decoration:none; transition:background 150ms ease, color 150ms ease; cursor:pointer; margin-bottom:2px;">
+            <i class="pi pi-map-marker" style="font-size:13px; width:16px; text-align:center;"></i>
             <span>Puntos de Venta</span>
           </a>
           <a
             routerLink="/admin/banks"
-            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            routerLinkActive="nav-active"
             [routerLinkActiveOptions]="{ exact: true }"
-            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
-            <i class="pi pi-credit-card text-xs"></i>
+            style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:400; color:#94a3b8; text-decoration:none; transition:background 150ms ease, color 150ms ease; cursor:pointer; margin-bottom:2px;">
+            <i class="pi pi-credit-card" style="font-size:13px; width:16px; text-align:center;"></i>
             <span>Bancos</span>
           </a>
           <a
             routerLink="/admin/users"
-            routerLinkActive="bg-app-bg border-l-2 border-brand-primary text-brand-primary"
+            routerLinkActive="nav-active"
             [routerLinkActiveOptions]="{ exact: true }"
-            class="w-full text-left px-3 py-2 text-sm font-mono tracking-wide uppercase transition hover:bg-app-bg/50 flex items-center space-x-2 text-text-main cursor-pointer">
-            <i class="pi pi-users text-xs"></i>
+            style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:7px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:400; color:#94a3b8; text-decoration:none; transition:background 150ms ease, color 150ms ease; cursor:pointer; margin-bottom:2px;">
+            <i class="pi pi-users" style="font-size:13px; width:16px; text-align:center;"></i>
             <span>Usuarios</span>
           </a>
         </ng-container>
@@ -95,27 +94,29 @@
     </div>
 
     <!-- Footer: user info + logout -->
-    <div class="border-t border-panel-border">
+    <div style="border-top:1px solid rgba(255,255,255,0.07);">
       <!-- User card -->
-      <div class="p-4 bg-app-bg/30">
-        <div class="flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-full bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center">
-            <i class="pi pi-user text-xs text-brand-primary"></i>
+      <div style="padding:14px 16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:32px; height:32px; border-radius:50%; background:rgba(2,132,199,0.15); border:1px solid rgba(2,132,199,0.3); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="pi pi-user" style="font-size:12px; color:#0284c7;"></i>
           </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-mono font-bold text-text-main truncate">{{ currentUser?.fullName }}</div>
-            <div class="text-[9px] font-mono text-text-muted uppercase tracking-wider">{{ currentUser?.roleName }}</div>
+          <div style="min-width:0; flex:1;">
+            <div style="font-family:'Lexend',sans-serif; font-size:12px; font-weight:600; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ currentUser?.fullName }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#475569; text-transform:uppercase; letter-spacing:0.1em; margin-top:2px;">{{ currentUser?.roleName }}</div>
           </div>
         </div>
-        <div class="text-[9px] font-mono text-text-muted mt-2 truncate">{{ currentUser?.companyName }}</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#334155; margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ currentUser?.companyName }}</div>
       </div>
 
-      <!-- Logout button -->
+      <!-- Logout -->
       <button
         id="btn-logout"
         (click)="logout()"
-        class="w-full px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest text-text-muted hover:text-brand-error hover:bg-brand-error/5 transition border-t border-panel-border flex items-center space-x-2">
-        <i class="pi pi-sign-out text-xs"></i>
+        style="width:100%; padding:11px 16px; background:transparent; border:none; border-top:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:8px; font-family:'Lexend',sans-serif; font-size:11px; font-weight:500; color:#475569; cursor:pointer; transition:color 150ms ease, background 150ms ease; text-align:left;"
+        onmouseover="this.style.color='#e11d48'; this.style.background='rgba(225,29,72,0.05)'"
+        onmouseout="this.style.color='#475569'; this.style.background='transparent'">
+        <i class="pi pi-sign-out" style="font-size:12px;"></i>
         <span>Cerrar Sesión</span>
       </button>
     </div>
@@ -123,34 +124,44 @@
   </aside>
 
   <!-- 2. Main Content -->
-  <main class="flex-1 flex flex-col overflow-hidden bg-app-bg">
+  <main style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#f8fafc;">
 
     <!-- Top Bar -->
-    <header class="h-14 border-b border-panel-border bg-panel-bg flex items-center justify-between px-6">
-      <div class="flex items-center space-x-2">
-        <span class="text-xs text-text-muted font-mono uppercase">Control /</span>
-        <span class="text-xs font-mono font-bold uppercase tracking-wider text-brand-primary">
-          {{ viewTitle }}
-        </span>
+    <header style="height:52px; background:#ffffff; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 24px; flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:11px; color:#94a3b8; font-family:'Lexend',sans-serif;">Control /</span>
+        <span style="font-size:13px; font-family:'Lexend',sans-serif; font-weight:600; color:#0f172a;">{{ viewTitle }}</span>
       </div>
-      <div class="flex items-center space-x-4">
+      <div style="display:flex; align-items:center; gap:10px;">
         <!-- Role badge -->
-        <span class="text-[9px] font-mono px-2 py-1 border uppercase tracking-widest"
-          [class.border-brand-primary]="isAdmin"
-          [class.text-brand-primary]="isAdmin"
-          [class.border-panel-border]="!isAdmin"
-          [class.text-text-muted]="!isAdmin">
-          ROL: {{ userRole }}
-        </span>
-        <span class="text-[10px] font-mono text-text-muted bg-panel-bg px-2 py-1 border border-panel-border">
-          ENTORNO: OPTICAL_SORTING_BENCH
+        <span
+          style="font-size:10px; font-family:'JetBrains Mono',monospace; padding:3px 10px; border-radius:5px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase;"
+          [style.background]="isAdmin ? 'rgba(2,132,199,0.08)' : '#f1f5f9'"
+          [style.color]="isAdmin ? '#0284c7' : '#64748b'"
+          [style.border]="isAdmin ? '1px solid rgba(2,132,199,0.25)' : '1px solid #e2e8f0'">
+          {{ userRole }}
         </span>
       </div>
     </header>
 
     <!-- Router Outlet -->
-    <div class="flex-1 overflow-y-auto p-6">
+    <div style="flex:1; overflow-y:auto; padding:24px;">
       <router-outlet></router-outlet>
     </div>
   </main>
 </div>
+
+<!-- Nav active state (injected globally via style) -->
+<style>
+  a.nav-active {
+    background: rgba(2, 132, 199, 0.12) !important;
+    color: #7dd3fc !important;
+  }
+  a.nav-active i {
+    color: #38bdf8 !important;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+</style>

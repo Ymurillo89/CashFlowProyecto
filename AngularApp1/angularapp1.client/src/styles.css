@@ -1,119 +1,360 @@
+/* ============================================================
+   CashFlow — Design System: "The Port & Vessel Registry"
+   Estética basada en el proyecto Exportación
+   Fuente: Lexend (display+body) · JetBrains Mono (datos)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "primeicons/primeicons.css";
 
+/* ── 1. DESIGN TOKENS ──────────────────────────────────────── */
 @theme {
-  --color-brand-primary: #00ff88;    /* Precise scanner green / Active laser */
-  --color-brand-error: #ff3366;      /* High-contrast discrepancy red */
-  --color-brand-warn: #ffaa00;       /* Pending status amber */
-  --color-app-bg: #0a0d14;           /* Deep dark workspace */
-  --color-panel-bg: #111622;         /* Slightly lighter panel background */
-  --color-panel-border: #1e293b;     /* Hairline border slate-800 */
-  --color-text-main: #f8fafc;        /* Bright slate white */
-  --color-text-muted: #64748b;       /* Muted slate gray */
-  --font-mono: "Space Mono", "JetBrains Mono", ui-monospace, monospace;
+  /* Typography */
+  --font-sans: 'Lexend', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Brand Colors */
+  --color-navy:          #0f172a;   /* Deep Navy — headers, sidebar */
+  --color-ocean:         #0284c7;   /* Ocean Blue — interactive, active */
+  --color-emerald:       #059669;   /* Emerald — success, completed */
+  --color-amber:         #d97706;   /* Amber — pending, in-transit */
+  --color-rose:          #e11d48;   /* Rose — error, disabled */
+
+  /* Semantic aliases for components */
+  --color-brand-primary: #0284c7;
+  --color-brand-success: #059669;
+  --color-brand-error:   #e11d48;
+  --color-brand-warn:    #d97706;
+
+  /* Backgrounds */
+  --color-app-bg:        #f8fafc;   /* Slate-50: global background */
+  --color-surface:       #f1f5f9;   /* Slate-100: panel secondary bg */
+  --color-panel-bg:      #ffffff;   /* Pure white cards */
+
+  /* Borders & Dividers */
+  --color-panel-border:  #e2e8f0;   /* Slate-200: thin borders */
+  --color-divider:       #cbd5e1;   /* Slate-300: stronger dividers */
+
+  /* Text */
+  --color-text-main:     #0f172a;   /* Slate-900: primary text */
+  --color-text-secondary:#475569;   /* Slate-600: secondary text */
+  --color-text-muted:    #64748b;   /* Slate-500: muted labels */
+  --color-text-subtle:   #94a3b8;   /* Slate-400: very subtle */
 }
 
-/* Design System Rules: High-Precision Optical Sorting Bench */
+/* ── 2. BASE STYLES ─────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
 
-body {
-  background-color: var(--color-app-bg);
-  color: var(--color-text-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Lexend', system-ui, -apple-system, sans-serif !important;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 150ms ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lexend', system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  a {
+    color: #0284c7;
+    text-decoration: none;
+  }
+
+  input, select, textarea, button {
+    font-family: inherit;
+  }
 }
 
-/* Force Tabular Numbers for all financial and numerical readouts */
-.data-tabular {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
+/* ── 3. COMPONENT CLASSES ───────────────────────────────────── */
 
-/* Rigid Paneled Spatial Layout */
+/* Panel / Card container */
 .precision-panel {
-  background-color: var(--color-panel-bg);
-  border: 1px solid var(--color-panel-border);
-  box-shadow: none !important;
-  border-radius: 2px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   position: relative;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.bg-panel-bg-active {
-  background-color: rgba(30, 41, 59, 0.4) !important;
+.precision-panel:hover {
+  border-color: #cbd5e1;
 }
 
-/* Hairline Grid Helper */
-.hairline-grid {
-  display: grid;
-  gap: 1px;
-  background-color: var(--color-panel-border);
+/* Section eyebrow label */
+.eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-family: 'Lexend', sans-serif;
 }
 
-.hairline-grid > * {
-  background-color: var(--color-panel-bg);
+/* Tabular numeric values */
+.data-tabular {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
 }
 
-/* High-Contrast Target Reticles (Active OCR Scanner States) */
+/* Status badges (stamp style from Exportacion) */
+.stamp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+.stamp-pending  { background: #fef3c7; color: #92400e; }
+.stamp-approved { background: #ecfdf5; color: #065f46; }
+.stamp-rejected { background: #fff1f2; color: #be123c; }
+.stamp-review   { background: #e0f2fe; color: #0369a1; }
+
+/* Corner reticles (decorative precision corners) */
 .reticle-corner {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: var(--color-brand-primary);
+  width: 10px;
+  height: 10px;
+  border-color: #0284c7;
   border-style: solid;
   pointer-events: none;
+  opacity: 0.7;
 }
-.reticle-top-left { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
-.reticle-top-right { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
-.reticle-bottom-left { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
-.reticle-bottom-right { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+.reticle-top-left     { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-top-left-radius: 4px; }
+.reticle-top-right    { top: -1px; right: -1px; border-width: 2px 2px 0 0; border-top-right-radius: 4px; }
+.reticle-bottom-left  { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; border-bottom-left-radius: 4px; }
+.reticle-bottom-right { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-bottom-right-radius: 4px; }
 
-.reticle-error-corner {
-  border-color: var(--color-brand-error) !important;
-}
-
-/* Glass Plate overlays (Microsocope Slide Effect) */
-.glass-plate {
-  background: rgba(17, 22, 34, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+/* Hairline dividers */
+.hairline {
+  height: 1px;
+  background-color: #e2e8f0;
+  border: none;
 }
 
-/* Laser sweep animation for OCR scanning */
+/* ── 4. THIN SCROLLBARS ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+/* ── 5. PRIMENG OVERRIDES ───────────────────────────────────── */
+/* Force Lexend on all PrimeNG components */
+.p-component,
+.p-button,
+.p-inputtext,
+.p-dropdown,
+.p-multiselect,
+.p-dialog,
+.p-toast,
+.p-card,
+.p-table,
+.p-datatable {
+  font-family: 'Lexend', system-ui, sans-serif !important;
+}
+
+/* Button resets */
+.p-button {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: none !important;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease !important;
+}
+
+.p-button-primary,
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
+  background: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.p-button-primary:hover,
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):hover {
+  background: #0369a1 !important;
+  border-color: #0369a1 !important;
+}
+
+.p-button-success {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+.p-button-success:hover {
+  background: #047857 !important;
+  border-color: #047857 !important;
+}
+
+.p-button-danger {
+  background: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+
+.p-button-outlined {
+  background: transparent !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.p-button-outlined:hover {
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+  background: rgba(2, 132, 199, 0.04) !important;
+}
+
+/* Input fields */
+.p-inputtext,
+.p-dropdown,
+.p-multiselect {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  font-size: 0.875rem !important;
+  box-shadow: none !important;
+  transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+.p-inputtext:focus,
+.p-dropdown:focus-within,
+.p-multiselect:focus-within {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12) !important;
+  outline: none !important;
+}
+
+/* Card */
+.p-card {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+.p-card .p-card-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+/* Dialog / Modal */
+.p-dialog {
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12) !important;
+}
+
+.p-dialog .p-dialog-header {
+  border-radius: 12px 12px 0 0 !important;
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 20px 24px !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+.p-dialog .p-dialog-content {
+  padding: 24px !important;
+  background: #ffffff !important;
+}
+
+.p-dialog .p-dialog-footer {
+  padding: 16px 24px !important;
+  background: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+/* DataTable */
+.p-datatable .p-datatable-thead > tr > th {
+  background: #f8fafc !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  padding: 10px 14px !important;
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  border-bottom: 1px solid #f1f5f9 !important;
+  transition: background-color 100ms ease !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: #f8fafc !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 10px 14px !important;
+  font-size: 0.8125rem !important;
+  color: #0f172a !important;
+  border: none !important;
+}
+
+/* Toast */
+.p-toast .p-toast-message {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* FileUpload */
+.p-fileupload {
+  border-radius: 8px !important;
+}
+
+/* Overlay panel */
+.p-overlaypanel {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.10) !important;
+}
+
+/* ── 6. LASER SCAN ANIMATION ────────────────────────────────── */
 @keyframes laser-sweep {
-  0% { top: 0%; opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  0%   { top: 0; opacity: 0.8; }
+  50%  { opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0.8; }
 }
 
 .laser-line {
   position: absolute;
   left: 0;
-  width: 100%;
+  right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-brand-primary), transparent);
-  box-shadow: 0 0 8px var(--color-brand-primary);
-  animation: laser-sweep 3s infinite linear;
+  background: linear-gradient(90deg, transparent, #0284c7, #0ea5e9, #0284c7, transparent);
+  box-shadow: 0 0 8px 2px rgba(2, 132, 199, 0.5);
+  animation: laser-sweep 2s ease-in-out infinite alternate;
   pointer-events: none;
-}
-
-/* Reset PrimeNG default rounded corners and shadows to match Optical Bench */
-.p-button, .p-inputtext, .p-fileupload, .p-card, .p-dialog {
-  border-radius: 2px !important;
-  box-shadow: none !important;
-}
-
-.p-button {
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  font-family: var(--font-mono);
-}
-
-.p-inputtext:focus {
-  border-color: var(--color-brand-primary) !important;
-  box-shadow: 0 0 0 1px var(--color-brand-primary) !important;
 }

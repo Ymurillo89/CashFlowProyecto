@@ -100,6 +100,59 @@ namespace AngularApp1.Server.Data
                         }
                     }
                 }
+
+                // Seed Gerente: gerente@exito.com / Gerente123!
+                long exitoCompanyId = 0;
+                using (var cmd = new NpgsqlCommand("SELECT Id FROM Flow_tblEmpresas WHERE Nombre = 'Supermercados Éxito' LIMIT 1", connection))
+                {
+                    var result = cmd.ExecuteScalar();
+                    if (result != null) exitoCompanyId = Convert.ToInt64(result);
+                }
+                if (exitoCompanyId == 0) exitoCompanyId = companyId; // fallback
+
+                using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM Flow_tblUsuarios WHERE Email = 'gerente@exito.com'", connection))
+                {
+                    var userExists = Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+                    if (!userExists)
+                    {
+                        var passwordHasher = new Microsoft.AspNetCore.Identity.PasswordHasher<object>();
+                        var hashedPassword = passwordHasher.HashPassword(new object(), "Gerente123!");
+
+                        var insertSql = @"
+                            INSERT INTO Flow_tblUsuarios (EmpresaId, RolId, NombreCompleto, Email, PasswordHash, Activo)
+                            VALUES (@EmpresaId, 2, 'Gerente Supermercados Éxito', 'gerente@exito.com', @PasswordHash, true);";
+
+                        using (var cmdInsert = new NpgsqlCommand(insertSql, connection))
+                        {
+                            cmdInsert.Parameters.AddWithValue("EmpresaId", exitoCompanyId);
+                            cmdInsert.Parameters.AddWithValue("PasswordHash", hashedPassword);
+                            cmdInsert.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                // Seed Cajero: cajero@exito.com / Cajero123!
+                using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM Flow_tblUsuarios WHERE Email = 'cajero@exito.com'", connection))
+                {
+                    var userExists = Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+                    if (!userExists)
+                    {
+                        var passwordHasher = new Microsoft.AspNetCore.Identity.PasswordHasher<object>();
+                        var hashedPassword = passwordHasher.HashPassword(new object(), "Cajero123!");
+
+                        var insertSql = @"
+                            INSERT INTO Flow_tblUsuarios (EmpresaId, RolId, NombreCompleto, Email, PasswordHash, Activo)
+                            VALUES (@EmpresaId, 3, 'Cajero Supermercados Éxito', 'cajero@exito.com', @PasswordHash, true);";
+
+                        using (var cmdInsert = new NpgsqlCommand(insertSql, connection))
+                        {
+                            cmdInsert.Parameters.AddWithValue("EmpresaId", exitoCompanyId);
+                            cmdInsert.Parameters.AddWithValue("PasswordHash", hashedPassword);
+                            cmdInsert.ExecuteNonQuery();
+                        }
+                    }
+                }
+
             }
             catch {}
         }
